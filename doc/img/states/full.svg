@@ -1,0 +1,8 @@
+<svg  xmlns="http://www.w3.org/2000/svg"
+      xmlns:xlink="http://www.w3.org/1999/xlink"
+      viewBox="0 0 200 50">
+    <rect x = "0" y = "0" width = "200" height = "50" fill = "#000" />
+    <rect x = "3" y = "3" width = "194" height = "44" fill = "#fff" />
+    <rect x = "7" y = "7" width = "186" height = "36" fill = "#000" />
+    <rect x = "10" y = "10" width = "180" height = "30" fill = "#fff" />
+</svg>

@@ -1,0 +1,20 @@
+<svg  xmlns="http://www.w3.org/2000/svg"
+    xmlns:xlink="http://www.w3.org/1999/xlink"
+    viewBox="0 0 640 480">
+
+    
+    <!-- Grid -->
+    <rect x="0" y="0" width="640" height="480" fill="#eee" />
+    <line x1="320" y1="0" x2="320" y2="480" stroke-width="2" stroke="#fff" />
+    <line x1="160" y1="0" x2="160" y2="480" stroke-width="1" stroke="#fff" />
+    <line x1="480" y1="0" x2="480" y2="480" stroke-width="1" stroke="#fff" />
+    <line x1="0" y1="240" x2="640" y2="240" stroke-width="2" stroke="#fff" />
+    <line x1="0" y1="120" x2="640" y2="120" stroke-width="1" stroke="#fff" />
+    <line x1="0" y1="360" x2="640" y2="360" stroke-width="1" stroke="#fff" />
+
+    <!-- Bar -->
+    <rect x = "0" y = "0" width = "200" height = "50" fill = "#000" />
+    <rect x = "3" y = "3" width = "194" height = "44" fill = "#fff" />
+    <rect x = "7" y = "7" width = "186" height = "36" fill = "#000" />
+
+</svg>
