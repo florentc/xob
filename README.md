@@ -90,7 +90,7 @@ When starting, xob looks for the configuration file in the following order:
 3. `~/.config/xob/styles.cfg`
 4. `/etc/xob/styles.cfg`
 
-Consult the man page for detailed information about the configuration file and the available options. The following `styles.cfg` defines a single style called "default" that showcases all the possible options set to the default values. The configration file may contain additional styles to among using the **-s** argument.
+Consult the man page for detailed information about the configuration file and the available options. The following `styles.cfg` defines a single style called "default" that showcases all the possible options set to the default values. The configration file may contain additional styles to choose among using the **-s** argument.
 
     default = {
         x         = {relative = 0.0; offset = 0;};
@@ -138,11 +138,11 @@ Illustration | Relative `x` | Offset `x` | Relative `y` | Offset `y` | Relative 
 ![pos02](/doc/img/positionning/pos02.svg) | 1.0 | 0 | 0.0 | 0 | 0.3 | 0
 ![pos03](/doc/img/positionning/pos03.svg) | 0.5 | 0 | 0.0 | 0 | 0.3 | 0
 ![pos04](/doc/img/positionning/pos04.svg) | 0.5 | 0 | 1.0 | 0 | 0.3 | 0
-![pos05](/doc/img/positionning/pos05.svg) | 1.0 | -16 | 1.0 | -16 | 0.3 | 0
+![pos05](/doc/img/positionning/pos05.svg) | 1.0 | -10 | 1.0 | -10 | 0.3 | 0
 ![pos06](/doc/img/positionning/pos06.svg) | 0.5 | 0 | 0.75 | 0 | 0.5 | 0
 ![pos07](/doc/img/positionning/pos07.svg) | 0.5 | 0 | 0.75 | 0 | 1 | 0
-![pos08](/doc/img/positionning/pos08.svg) | 0.5 | 0 | 0.75 | 0 | 1 | -16
-![pos09](/doc/img/positionning/pos09.svg) | 0.0 | +81 | 0.0 | +123 | 0.0 | +108
+![pos08](/doc/img/positionning/pos08.svg) | 0.5 | 0 | 0.75 | 0 | 1 | -20
+![pos09](/doc/img/positionning/pos09.svg) | 0.0 | +110 | 0.0 | +135 | 0.0 | +126
 
 ### Size and borders
 
@@ -198,11 +198,12 @@ Here is a style that integrates well into default i3wm. Add it to your `styles.c
                 border = "#444444";
             };
         };
-    }
+    };
 
 ## FAQ
 
 > "How should I display different sources of information (e.g. volume and brightness)?"
+
 > "What happens if several bars are displayed at the same time?"
 
 You can run and distinguish two or more instances of xob with different styles (including color, position, extreme values, etc.). To do so, specify and use different styles from your configuration file (or use different configuration files). To prevent the bars from overlapping, make use of the offset options. For instance you can offset a bar to the top or bottom (see the following example configuration file).
@@ -254,4 +255,4 @@ xob works well under multihead setups but there is no easy way to configure the 
 
 ## License
 
-GPL3, see [LICENSE](/LICENSE)
+GPL3, see [LICENSE](/LICENSE).
