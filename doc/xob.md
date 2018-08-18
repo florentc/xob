@@ -190,9 +190,9 @@ This example configuration file provides two styles "volume" and "backlight". In
                 border = "#ff0000";
             };
             altoverflow = {
-                fg     = "#ff0000";
+                fg     = "#550000";
                 bg     = "#000000";
-                border = "#555555";
+                border = "#550000";
             };
         };
     };

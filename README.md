@@ -120,9 +120,9 @@ Consult the man page for detailed information about the configuration file and t
                 border = "#ff0000";
             };
             altoverflow = {
-                fg     = "#ff0000";
+                fg     = "#550000";
                 bg     = "#000000";
-                border = "#555555";
+                border = "#550000";
             };
         };
     };
