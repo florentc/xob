@@ -15,6 +15,8 @@
  * along with xob.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#define _XOPEN_SOURCE 500
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <limits.h>

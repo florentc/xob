@@ -1,5 +1,5 @@
 LIBS    = x11 libconfig
-CFLAGS  = `pkg-config --cflags $(LIBS)` -std=gnu99 -Wall -Wextra -pedantic
+CFLAGS  = `pkg-config --cflags $(LIBS)` -std=c99 -Wall -Wextra -pedantic
 LDFLAGS = `pkg-config --libs $(LIBS)`
 
 PROGRAM = xob
