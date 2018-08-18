@@ -37,7 +37,7 @@ By default: 100.
 .RE
 .TP
 .B \f[B]\-t\f[] \f[I]timeout\f[]
-Number of seconds between an update and the vanishing of the gauge.
+Number of seconds between an update and the vanishing of the bar.
 If set to 0, the bar is never hidden.
 By default: 1.
 .RS
@@ -252,15 +252,21 @@ volume\ =\ {
 \ \ \ \ outline\ \ \ =\ 1;
 \ \ \ \ border\ \ \ \ =\ 2;
 \ \ \ \ padding\ \ \ =\ 0;
+\ \ \ \ y\ =\ {
+\ \ \ \ \ \ \ \ relative\ =\ 0.9;
+\ \ \ \ \ \ \ \ offset\ =\ 0;
+\ \ \ \ };
 };
 backlight\ =\ {
 \ \ \ \ thickness\ =\ 24;
 \ \ \ \ outline\ \ \ =\ 1;
 \ \ \ \ border\ \ \ \ =\ 2;
 \ \ \ \ padding\ \ \ =\ 0;
-
-\ \ \ \ #\ To\ prevent\ overlap\ with\ the\ volume\ bar\ if\ displayed\ at\ the\ same\ time
-\ \ \ \ y\ =\ {offset\ =\ \-28}
+\ \ \ \ y\ =\ {
+\ \ \ \ \ \ \ \ relative\ =\ 0.9;
+\ \ \ \ \ \ \ \ #\ To\ prevent\ overlap\ with\ the\ volume\ bar\ if\ displayed\ at\ the\ same\ time
+\ \ \ \ \ \ \ \ offset\ =\ \-30;
+\ \ \ \ };
 
 \ \ \ \ color\ =\ {
 \ \ \ \ \ \ \ \ normal\ =\ {

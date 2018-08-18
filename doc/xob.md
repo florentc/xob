@@ -135,15 +135,21 @@ This example configuration file provides two styles "volume" and "backlight". In
         outline   = 1;
         border    = 2;
         padding   = 0;
+        y = {
+            relative = 0.9;
+            offset = 0;
+        };
     };
     backlight = {
         thickness = 24;
         outline   = 1;
         border    = 2;
         padding   = 0;
-
-        # To prevent overlap with the volume bar if displayed at the same time
-        y = {offset = -28}
+        y = {
+            relative = 0.9;
+            # To prevent overlap with the volume bar if displayed at the same time
+            offset = -30;
+        };
 
         color = {
             normal = {
