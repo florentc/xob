@@ -21,7 +21,7 @@
 #include <stdbool.h>
 #include "display.h"
 
-#define VERSION_NUMBER "0.1.0.dev"
+#define VERSION_NUMBER "0.1.0"
 
 typedef struct
 {
