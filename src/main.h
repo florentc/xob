@@ -18,8 +18,8 @@
 #ifndef __MAIN_H__
 #define __MAIN_H__
 
-#include <stdbool.h>
 #include "display.h"
+#include <stdbool.h>
 
 #define VERSION_NUMBER "0.1.0"
 

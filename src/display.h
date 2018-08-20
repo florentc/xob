@@ -22,16 +22,17 @@
 
 #include <X11/Xlib.h>
 
-typedef enum {
+typedef enum
+{
     NORMAL,
     ALTERNATIVE
 } show_mode_t;
 
 typedef struct
 {
-    Display* display;
+    Display *display;
     int screen_number;
-    Screen* screen;
+    Screen *screen;
     Window window;
     Bool mapped;
 } x_context_t;
@@ -68,12 +69,8 @@ typedef struct
 } display_context_t;
 
 display_context_t init(style_t conf);
-display_context_t show(
-        display_context_t dc,
-        int value,
-        int cap,
-        overflow_mode_t overflow_mode,
-        show_mode_t show_mode);
+display_context_t show(display_context_t dc, int value, int cap,
+                       overflow_mode_t overflow_mode, show_mode_t show_mode);
 display_context_t hide(display_context_t dc);
 
 #endif /* __DISPLAY_H__ */

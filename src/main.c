@@ -17,28 +17,23 @@
 
 #define _XOPEN_SOURCE 500
 
+#include "main.h"
+#include "conf.h"
+#include "display.h"
+#include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <limits.h>
-#include <unistd.h>
 #include <string.h>
 #include <sys/select.h>
-#include "main.h"
-#include "display.h"
-#include "conf.h"
+#include <unistd.h>
 
-
-int main(int argc, char* argv[])
+int main(int argc, char *argv[])
 {
-
-
     int cap = 100;
     int timeout = 1;
 
-    char* arg_config_file_path = NULL;
-    char xdg_config_file_path[PATH_MAX];
-    char real_config_file_path[PATH_MAX];
-    char* style_name = DEFAULT_STYLE;
+    char *arg_config_file_path = NULL;
+    char *style_name = DEFAULT_STYLE;
 
     /* Command-line arguments */
     char opt;
@@ -46,46 +41,59 @@ int main(int argc, char* argv[])
     {
         switch (opt)
         {
-            case 'm':
-                cap = atoi(optarg);
-                if (cap <= 0)
-                {
-                    fprintf(stderr, "Invalid cap (maximum value): must be a natural number.\n");
-                    exit(EXIT_FAILURE);
-                }
-                break;
-            case 't':
-                timeout = atoi(optarg);
-                if (timeout < 0)
-                {
-                    fprintf(stderr, "Invalid timeout: must be a natural number.\n");
-                    exit(EXIT_FAILURE);
-                }
-                break;
-            case 'c':
-                arg_config_file_path = optarg;
-                break;
-            case 's':
-                style_name = optarg;
-                break;
-            case 'v':
-                printf("Version %s\n", VERSION_NUMBER);
-                exit(EXIT_SUCCESS);
-                break;
-            default:
-                fprintf(stderr, "Usage: %s [-m maximum] [-t timeout] [-c configfile] [-s style]\n\n", argv[0]);
-                fprintf(stderr,"\t-m <non-zero natural>\t maximum value (0 is always the minimum)\n");
-                fprintf(stderr,"\t-t <natural>\t number of seconds before the gauge is hidden after an update or 0 if always on screen\n");
-                fprintf(stderr,"\t-c <filepath>\t configuration file specifying styles\n");
-                fprintf(stderr,"\t-s <style name>\t style (appearance) to use from the configuration file\n");
-                fprintf(stderr,"\t-v \t display version number\n");
+        case 'm':
+            cap = atoi(optarg);
+            if (cap <= 0)
+            {
+                fprintf(
+                    stderr,
+                    "Invalid cap (maximum value): must be a natural number.\n");
                 exit(EXIT_FAILURE);
+            }
+            break;
+        case 't':
+            timeout = atoi(optarg);
+            if (timeout < 0)
+            {
+                fprintf(stderr, "Invalid timeout: must be a natural number.\n");
+                exit(EXIT_FAILURE);
+            }
+            break;
+        case 'c':
+            arg_config_file_path = optarg;
+            break;
+        case 's':
+            style_name = optarg;
+            break;
+        case 'v':
+            printf("Version %s\n", VERSION_NUMBER);
+            exit(EXIT_SUCCESS);
+            break;
+        default:
+            fprintf(stderr,
+                    "Usage: %s [-m maximum] [-t timeout] [-c configfile] [-s "
+                    "style]\n\n",
+                    argv[0]);
+            fprintf(stderr, "    -m <non-zero natural>"
+                            " maximum value (0 is always the minimum)\n");
+            fprintf(stderr, "    -t <natural>         "
+                            " number of seconds before the gauge is hidden "
+                            "after an update or 0 if always on screen\n");
+            fprintf(stderr, "    -c <filepath>        "
+                            " configuration file specifying styles\n");
+            fprintf(stderr, "    -s <style name>      "
+                            " style to use from the configuration file\n");
+            fprintf(stderr, "    -v                   "
+                            " display version number\n");
+            exit(EXIT_FAILURE);
         }
     }
 
     /* Style */
-    FILE* config_file = NULL;
+    FILE *config_file = NULL;
     style_t style = DEFAULT_CONFIGURATION;
+    char xdg_config_file_path[PATH_MAX];
+    char real_config_file_path[PATH_MAX];
 
     /* Case #1: config file in argument */
     if (arg_config_file_path != NULL)
@@ -96,24 +104,19 @@ int main(int argc, char* argv[])
         }
         else
         {
-            fprintf(stderr, "Error: could not open specified configuration file.\n");
-            fprintf(stderr, "Info: falling back to standard configuration files.\n");
+            fprintf(stderr,
+                    "Error: could not open specified configuration file.\n");
+            fprintf(stderr,
+                    "Info: falling back to standard configuration files.\n");
         }
     }
 
     /* Case #2: the XDG_CONFIG_HOME environment variable is set */
     if (config_file == NULL && getenv("XDG_CONFIG_HOME") != NULL)
     {
-        if (
-                snprintf(
-                    xdg_config_file_path,
-                    PATH_MAX,
-                    "%s/%s/%s",
-                    getenv("XDG_CONFIG_HOME"),
-                    DEFAULT_CONFIG_APPNAME,
-                    DEFAULT_CONFIG_FILENAME)
-                < PATH_MAX
-           )
+        if (snprintf(xdg_config_file_path, PATH_MAX, "%s/%s/%s",
+                     getenv("XDG_CONFIG_HOME"), DEFAULT_CONFIG_APPNAME,
+                     DEFAULT_CONFIG_FILENAME) < PATH_MAX)
         {
             if (realpath(xdg_config_file_path, real_config_file_path) != NULL)
             {
@@ -125,16 +128,9 @@ int main(int argc, char* argv[])
     /* Case #3: falling back to default configuration directory */
     if (config_file == NULL)
     {
-        if (
-                snprintf(
-                    xdg_config_file_path,
-                    PATH_MAX,
-                    "%s/.config/%s/%s",
-                    getenv("HOME"),
-                    DEFAULT_CONFIG_APPNAME,
-                    DEFAULT_CONFIG_FILENAME)
-                < PATH_MAX
-           )
+        if (snprintf(xdg_config_file_path, PATH_MAX, "%s/.config/%s/%s",
+                     getenv("HOME"), DEFAULT_CONFIG_APPNAME,
+                     DEFAULT_CONFIG_FILENAME) < PATH_MAX)
         {
             if (realpath(xdg_config_file_path, real_config_file_path) != NULL)
             {
@@ -146,15 +142,9 @@ int main(int argc, char* argv[])
     /* Case #4: system wide configuration */
     if (config_file == NULL)
     {
-        if (
-                snprintf(
-                    xdg_config_file_path,
-                    PATH_MAX,
-                    "/etc/%s/%s",
-                    DEFAULT_CONFIG_APPNAME,
-                    DEFAULT_CONFIG_FILENAME)
-                < PATH_MAX
-           )
+        if (snprintf(xdg_config_file_path, PATH_MAX, "/etc/%s/%s",
+                     DEFAULT_CONFIG_APPNAME,
+                     DEFAULT_CONFIG_FILENAME) < PATH_MAX)
         {
             if (realpath(xdg_config_file_path, real_config_file_path) != NULL)
             {
@@ -170,7 +160,8 @@ int main(int argc, char* argv[])
     }
     else
     {
-        fprintf(stderr, "Info: reading configuration from %s.\n", real_config_file_path);
+        fprintf(stderr, "Info: reading configuration from %s.\n",
+                real_config_file_path);
         style = parse_style_config(config_file, style_name, style);
         fclose(config_file);
     }
@@ -199,49 +190,38 @@ int main(int argc, char* argv[])
             FD_SET(STDIN_FILENO, &fds);
             tv.tv_sec = timeout;
             tv.tv_usec = 0;
-            switch (
-                    select(
-                        1,
-                        &fds,
-                        NULL,
-                        NULL,
-                        /* No timeout if already hidden */
-                        displayed && timeout > 0 ? &tv : NULL
-                        )
-                   )
+            switch (select(1, &fds, NULL, NULL,
+                           /* No timeout if already hidden */
+                           displayed && timeout > 0 ? &tv : NULL))
             {
-                case -1:
-                    perror("select()");
-                    exit(EXIT_FAILURE);
-                case 0:
-                    /* Time to hide the gauge */
-                    display_context = hide(display_context);
-                    displayed = false;
-                    break;
-                default:
-                    /* Update display using new input value */
-                    input_value = parse_input();
-                    if (input_value.valid)
-                    {
-                        display_context = show(
-                                display_context,
-                                input_value.value,
-                                cap,
-                                style.overflow,
-                                input_value.show_mode);
-                        printf("Update: %d/%d %s\n",
-                                input_value.value,
-                                cap,
-                                (input_value.show_mode == ALTERNATIVE) ? "[ALT]" : "");
-                        displayed = true;
-                        listening = true;
-                    }
-                    else
-                    {
-                        /* Stop after unexpected input */
-                        listening = false;
-                    }
-                    break;
+            case -1:
+                perror("select()");
+                exit(EXIT_FAILURE);
+            case 0:
+                /* Time to hide the gauge */
+                display_context = hide(display_context);
+                displayed = false;
+                break;
+            default:
+                /* Update display using new input value */
+                input_value = parse_input();
+                if (input_value.valid)
+                {
+                    display_context =
+                        show(display_context, input_value.value, cap,
+                             style.overflow, input_value.show_mode);
+                    printf("Update: %d/%d %s\n", input_value.value, cap,
+                           (input_value.show_mode == ALTERNATIVE) ? "[ALT]"
+                                                                  : "");
+                    displayed = true;
+                    listening = true;
+                }
+                else
+                {
+                    /* Stop after unexpected input */
+                    listening = false;
+                }
+                break;
             }
         }
     }

@@ -20,23 +20,27 @@
 
 #include <stdio.h>
 
-typedef struct {
-    const char* fg;
-    const char* bg;
-    const char* border;
+typedef struct
+{
+    const char *fg;
+    const char *bg;
+    const char *border;
 } colorspec_t;
 
-typedef struct {
+typedef struct
+{
     double rel;
     int abs;
 } dim_t;
 
-typedef enum {
+typedef enum
+{
     HIDDEN,
     PROPORTIONAL
 } overflow_mode_t;
 
-typedef struct {
+typedef struct
+{
     dim_t x;
     dim_t y;
     dim_t length;
@@ -45,7 +49,8 @@ typedef struct {
     int padding;
     int outline;
     overflow_mode_t overflow;
-    struct {
+    struct
+    {
         colorspec_t normal;
         colorspec_t overflow;
         colorspec_t alt;
@@ -53,6 +58,7 @@ typedef struct {
     } color;
 } style_t;
 
+/* clang-format off */
 #define DEFAULT_CONFIGURATION (style_t) {\
         .x =\
         {\
@@ -102,15 +108,13 @@ typedef struct {
             }\
         }\
     }
-
+/* clang-format on */
 
 #define DEFAULT_STYLE "default"
 #define DEFAULT_CONFIG_APPNAME "xob"
 #define DEFAULT_CONFIG_FILENAME "styles.cfg"
 
-style_t parse_style_config(
-        FILE* filename,
-        const char* stylename,
-        style_t default_style);
+style_t parse_style_config(FILE *filename, const char *stylename,
+                           style_t default_style);
 
 #endif /* __CONF_H__ */
