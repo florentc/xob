@@ -171,6 +171,8 @@ Illustration | Display mode       | Overflow type
 
 ### i3wm
 
+![i3 style screenshot](/doc/img/i3-style.png)
+
 Here is a style that integrates well into default i3wm. Add it to your `styles.cfg`
 
     i3 = {
