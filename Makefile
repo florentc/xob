@@ -3,7 +3,7 @@ CFLAGS  = `pkg-config --cflags $(LIBS)` -std=c99 -Wall -Wextra -pedantic
 LDFLAGS = `pkg-config --libs $(LIBS)`
 
 PROGRAM = xob
-MANPAGE = xob.1
+MANPAGE = doc/xob.1
 SOURCES = $(wildcard src/*.c)
 OBJECTS = $(SOURCES:.c=.o)
 
@@ -25,7 +25,7 @@ install: $(PROGRAM) $(MANPAGE)
 	mkdir --parents "$(DESTDIR)$(BINPREFIX)"
 	$(INSTALL_PROGRAM) "$(PROGRAM)" -t "$(DESTDIR)$(BINPREFIX)"
 	mkdir --parents "$(DESTDIR)$(MANPREFIX)/man1"
-	$(INSTALL_DATA) "doc/$(MANPAGE)" -t "$(DESTDIR)$(MANPREFIX)/man1"
+	$(INSTALL_DATA) "$(MANPAGE)" -t "$(DESTDIR)$(MANPREFIX)/man1"
 
 uninstall:
 	rm -f "$(DESTDIR)$(BINPREFIX)/$(PROGRAM)"
