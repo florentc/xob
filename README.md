@@ -12,6 +12,8 @@ xob depends on libx11 and libconfig.
     make
     make install
 
+There is also an [Archlinux package on the AUR](https://aur.archlinux.org/packages/xob/).
+
 ## Usage
 
     xob [-m maximum] [-t timeout] [-c configfile] [-s style]
