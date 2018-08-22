@@ -15,8 +15,8 @@
  * along with xob.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef __CONF_H__
-#define __CONF_H__
+#ifndef CONF_H
+#define CONF_H
 
 #include <stdio.h>
 

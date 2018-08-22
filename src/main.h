@@ -15,8 +15,8 @@
  * along with xob.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef __MAIN_H__
-#define __MAIN_H__
+#ifndef MAIN_H
+#define MAIN_H
 
 #include "display.h"
 #include <stdbool.h>

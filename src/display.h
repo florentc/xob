@@ -15,8 +15,8 @@
  * along with xob.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef __DISPLAY_H__
-#define __DISPLAY_H__
+#ifndef DISPLAY_H
+#define DISPLAY_H
 
 #include "conf.h"
 
