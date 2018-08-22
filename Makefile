@@ -16,7 +16,7 @@ MANPREFIX      ?= $(PREFIX)/share/man
 all: $(PROGRAM)
 
 $(PROGRAM): $(OBJECTS)
-	$(CC) $(LDFLAGS) -o $@ $(OBJECTS)
+	$(CC) -o $@ $(OBJECTS) $(LDFLAGS)
 
 %.o: %.c %.h
 	$(CC) $(CFLAGS) -c -o $@ $<
