@@ -17,6 +17,8 @@
 
 #include "display.h"
 
+#include <X11/Xutil.h>
+
 /* Keep value in range */
 static int fit_in(int value, int min, int max)
 {
@@ -132,6 +134,16 @@ display_context_t init(style_t conf)
             DefaultDepth(dc.x.display, dc.x.screen_number), CopyFromParent,
             DefaultVisual(dc.x.display, dc.x.screen_number), CWOverrideRedirect,
             &window_attributes);
+
+        /* Set a WM_CLASS for the window */
+        XClassHint *class_hint = XAllocClassHint();
+        if (class_hint != NULL)
+        {
+            class_hint->res_name = DEFAULT_CONFIG_APPNAME;
+            class_hint->res_class = DEFAULT_CONFIG_APPNAME;
+            XSetClassHint(dc.x.display, dc.x.window, class_hint);
+            XFree(class_hint);
+        }
 
         /* The new window is not mapped yet */
         dc.x.mapped = False;
