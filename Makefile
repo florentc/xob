@@ -1,6 +1,6 @@
 LIBS    = x11 libconfig
-CFLAGS  = `pkg-config --cflags $(LIBS)` -std=c99 -Wall -Wextra -pedantic
-LDFLAGS = `pkg-config --libs $(LIBS)`
+CFLAGS  += $(shell pkg-config --cflags $(LIBS)) -std=c99 -Wall -Wextra -pedantic
+LDFLAGS += $(shell pkg-config --libs $(LIBS))
 
 PROGRAM = xob
 MANPAGE = doc/xob.1
