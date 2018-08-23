@@ -23,7 +23,7 @@
 #include <string.h>
 
 static int config_setting_lookup_dim(const config_setting_t *setting,
-                                     const char *name, dim_t *value)
+                                     const char *name, Dim *value)
 {
     double rel;
     int abs;
@@ -99,7 +99,7 @@ static int config_setting_lookup_color(const config_setting_t *setting,
 }
 
 static int config_setting_lookup_colorspec(const config_setting_t *setting,
-                                           const char *name, colorspec_t *value)
+                                           const char *name, Colorspec *value)
 {
     config_setting_t *colorspec_setting;
     int success_status = CONFIG_FALSE;
@@ -119,7 +119,7 @@ static int config_setting_lookup_colorspec(const config_setting_t *setting,
 
 static int config_setting_lookup_overflowmode(const config_setting_t *setting,
                                               const char *name,
-                                              overflow_mode_t *value)
+                                              Overflow_mode *value)
 {
     const char *stringvalue;
     int success_status = CONFIG_FALSE;
@@ -148,14 +148,13 @@ static int config_setting_lookup_overflowmode(const config_setting_t *setting,
     return success_status;
 }
 
-style_t parse_style_config(FILE *file, const char *stylename,
-                           style_t default_style)
+Style parse_style_config(FILE *file, const char *stylename, Style default_style)
 {
     config_t config;
     config_setting_t *style_config;
     config_setting_t *color_config;
     config_init(&config);
-    style_t style = default_style;
+    Style style = default_style;
 
     if (config_read(&config, file))
     {

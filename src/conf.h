@@ -25,41 +25,41 @@ typedef struct
     const char *fg;
     const char *bg;
     const char *border;
-} colorspec_t;
+} Colorspec;
 
 typedef struct
 {
     double rel;
     int abs;
-} dim_t;
+} Dim;
 
 typedef enum
 {
     HIDDEN,
     PROPORTIONAL
-} overflow_mode_t;
+} Overflow_mode;
 
 typedef struct
 {
-    dim_t x;
-    dim_t y;
-    dim_t length;
+    Dim x;
+    Dim y;
+    Dim length;
     int thickness;
     int border;
     int padding;
     int outline;
-    overflow_mode_t overflow;
+    Overflow_mode overflow;
     struct
     {
-        colorspec_t normal;
-        colorspec_t overflow;
-        colorspec_t alt;
-        colorspec_t altoverflow;
+        Colorspec normal;
+        Colorspec overflow;
+        Colorspec alt;
+        Colorspec altoverflow;
     } color;
-} style_t;
+} Style;
 
 /* clang-format off */
-#define DEFAULT_CONFIGURATION (style_t) {\
+#define DEFAULT_CONFIGURATION (Style) {\
         .x =\
         {\
             .rel = 0.5,\
@@ -114,7 +114,7 @@ typedef struct
 #define DEFAULT_CONFIG_APPNAME "xob"
 #define DEFAULT_CONFIG_FILENAME "styles.cfg"
 
-style_t parse_style_config(FILE *filename, const char *stylename,
-                           style_t default_style);
+Style parse_style_config(FILE *filename, const char *stylename,
+                         Style default_style);
 
 #endif /* __CONF_H__ */

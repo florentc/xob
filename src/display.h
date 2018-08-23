@@ -26,7 +26,7 @@ typedef enum
 {
     NORMAL,
     ALTERNATIVE
-} show_mode_t;
+} Show_mode;
 
 typedef struct
 {
@@ -35,22 +35,22 @@ typedef struct
     Screen *screen;
     Window window;
     Bool mapped;
-} x_context_t;
+} X_context;
 
 typedef struct
 {
     GC fg;
     GC bg;
     GC border;
-} gc_colorset_t;
+} Gc_colorset;
 
 typedef struct
 {
-    gc_colorset_t normal;
-    gc_colorset_t overflow;
-    gc_colorset_t alt;
-    gc_colorset_t altoverflow;
-} color_context_t;
+    Gc_colorset normal;
+    Gc_colorset overflow;
+    Gc_colorset alt;
+    Gc_colorset altoverflow;
+} Color_context;
 
 typedef struct
 {
@@ -59,18 +59,18 @@ typedef struct
     int padding;
     int width;
     int height;
-} geometry_context_t;
+} Geometry_context;
 
 typedef struct
 {
-    x_context_t x;
-    color_context_t color;
-    geometry_context_t geometry;
-} display_context_t;
+    X_context x;
+    Color_context color;
+    Geometry_context geometry;
+} Display_context;
 
-display_context_t init(style_t conf);
-display_context_t show(display_context_t dc, int value, int cap,
-                       overflow_mode_t overflow_mode, show_mode_t show_mode);
-display_context_t hide(display_context_t dc);
+Display_context init(Style conf);
+Display_context show(Display_context dc, int value, int cap,
+                     Overflow_mode overflow_mode, Show_mode show_mode);
+Display_context hide(Display_context dc);
 
 #endif /* __DISPLAY_H__ */

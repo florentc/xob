@@ -29,7 +29,7 @@ static int fit_in(int value, int min, int max)
 
 /* Get graphic context from a hex color specification string */
 /* NULL is returned in case of a parse error. */
-static GC gc_from_string(x_context_t x, const char *hexcolorstring)
+static GC gc_from_string(X_context x, const char *hexcolorstring)
 {
     XColor color;
     GC gc = XCreateGC(x.display, x.window, 0, NULL);
@@ -47,7 +47,7 @@ static GC gc_from_string(x_context_t x, const char *hexcolorstring)
 }
 
 /* Draw an empty bar with the given border color */
-static void draw_empty(x_context_t x, geometry_context_t g, gc_colorset_t color)
+static void draw_empty(X_context x, Geometry_context g, Gc_colorset color)
 {
     /* Outline */
     XFillRectangle(x.display, x.window, color.bg, 0, 0,
@@ -64,14 +64,13 @@ static void draw_empty(x_context_t x, geometry_context_t g, gc_colorset_t color)
 }
 
 /* Draw a given length of filled bar with the given color */
-static void draw_content(x_context_t x, geometry_context_t g, int length,
-                         GC color)
+static void draw_content(X_context x, Geometry_context g, int length, GC color)
 {
     XFillRectangle(x.display, x.window, color, g.outline + g.border + g.padding,
                    g.outline + g.border + g.padding, length, g.height);
 }
 /* Draw a separator (padding-sized gap) at the given position */
-static void draw_separator(x_context_t x, geometry_context_t g, int position,
+static void draw_separator(X_context x, Geometry_context g, int position,
                            GC color)
 {
     XFillRectangle(x.display, x.window, color,
@@ -82,9 +81,9 @@ static void draw_separator(x_context_t x, geometry_context_t g, int position,
 /* PUBLIC Returns a new display context from a given configuration. If the
  * .x.display field of the returned display context is NULL, display could not
  * have been opened.*/
-display_context_t init(style_t conf)
+Display_context init(Style conf)
 {
-    display_context_t dc;
+    Display_context dc;
     Window root;
     XSetWindowAttributes window_attributes;
     int topleft_x;
@@ -171,13 +170,13 @@ display_context_t init(style_t conf)
 }
 
 /* PUBLIC Show a bar filled at value/cap in normal or alternative mode */
-display_context_t show(display_context_t dc, int value, int cap,
-                       overflow_mode_t overflow_mode, show_mode_t show_mode)
+Display_context show(Display_context dc, int value, int cap,
+                     Overflow_mode overflow_mode, Show_mode show_mode)
 {
-    display_context_t newdc = dc;
+    Display_context newdc = dc;
 
-    gc_colorset_t colorset;
-    gc_colorset_t colorset_overflow_proportional;
+    Gc_colorset colorset;
+    Gc_colorset colorset_overflow_proportional;
 
     if (!dc.x.mapped)
     {
@@ -228,9 +227,9 @@ display_context_t show(display_context_t dc, int value, int cap,
 }
 
 /* PUBLIC Hide the window */
-display_context_t hide(display_context_t dc)
+Display_context hide(Display_context dc)
 {
-    display_context_t newdc = dc;
+    Display_context newdc = dc;
 
     if (dc.x.mapped)
     {

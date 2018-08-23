@@ -91,7 +91,7 @@ int main(int argc, char *argv[])
 
     /* Style */
     FILE *config_file = NULL;
-    style_t style = DEFAULT_CONFIGURATION;
+    Style style = DEFAULT_CONFIGURATION;
     char xdg_config_file_path[PATH_MAX];
     char real_config_file_path[PATH_MAX];
 
@@ -169,8 +169,8 @@ int main(int argc, char *argv[])
     /* Display */
     bool displayed = false;
     bool listening = true;
-    input_value_t input_value;
-    display_context_t display_context = init(style);
+    Input_Value input_value;
+    Display_context display_context = init(style);
 
     if (display_context.x.display == NULL)
     {
@@ -228,9 +228,9 @@ int main(int argc, char *argv[])
     return EXIT_SUCCESS;
 }
 
-input_value_t parse_input(void)
+Input_Value parse_input(void)
 {
-    input_value_t input_value;
+    Input_Value input_value;
     char altflag;
 
     input_value.valid = false;

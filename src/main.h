@@ -27,9 +27,9 @@ typedef struct
 {
     bool valid;
     int value;
-    show_mode_t show_mode;
-} input_value_t;
+    Show_mode show_mode;
+} Input_Value;
 
-input_value_t parse_input(void);
+Input_Value parse_input(void);
 
 #endif
