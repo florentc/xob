@@ -142,14 +142,11 @@ int main(int argc, char *argv[])
     /* Case #4: system wide configuration */
     if (config_file == NULL)
     {
-        if (snprintf(xdg_config_file_path, PATH_MAX, "/etc/%s/%s",
-                     DEFAULT_CONFIG_APPNAME,
-                     DEFAULT_CONFIG_FILENAME) < PATH_MAX)
+        if (realpath(SYSCONFDIR "/" DEFAULT_CONFIG_APPNAME
+                                "/" DEFAULT_CONFIG_FILENAME,
+                     real_config_file_path) != NULL)
         {
-            if (realpath(xdg_config_file_path, real_config_file_path) != NULL)
-            {
-                config_file = fopen(real_config_file_path, "r");
-            }
+            config_file = fopen(real_config_file_path, "r");
         }
     }
 

@@ -35,7 +35,7 @@ The configuration file only specifies styles (appearances) for the bar. The maxi
 1. The path specified as the **-c** argument.
 2. \$XDG\_CONFIG\_HOME\$/xob/styles.cfg (if \$XDG\_CONFIG\_HOME\$ is set)
 3. ~/.config/xob/styles.cfg
-4. /etc/xob/styles.cfg
+4. Under the system configuration directory (determined during build process): e.g. /etc/xob/styles.cfg or /usr/local/etc/xob/styles.cfg
 
 ## SYNTAX
 

@@ -90,7 +90,7 @@ When starting, xob looks for the configuration file in the following order:
 1. The path specified as the **-c** argument.
 2. `$XDG_CONFIG_HOME$/xob/styles.cfg` (if `$XDG_CONFIG_HOME$` is set)
 3. `~/.config/xob/styles.cfg`
-4. `/etc/xob/styles.cfg`
+4. Under the system configuration directory (determined during build process): e.g. /etc/xob/styles.cfg or /usr/local/etc/xob/styles.cfg
 
 Consult the man page for detailed information about the configuration file and the available options. The following `styles.cfg` defines a single style called "default" that showcases all the possible options set to the default values. The configration file may contain additional styles to choose among using the **-s** argument.
 
