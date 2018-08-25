@@ -1,4 +1,4 @@
-% XOB(1) xob 0.1.0
+% XOB(1) xob 0.1.1 | xob Manual
 % Florent Ch
 % August 2018
 
