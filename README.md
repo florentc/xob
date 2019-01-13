@@ -95,7 +95,7 @@ When starting, xob looks for the configuration file in the following order:
 Consult the man page for detailed information about the configuration file and the available options. The following `styles.cfg` defines a single style called "default" that showcases all the possible options set to the default values. The configration file may contain additional styles to choose among using the **-s** argument.
 
     default = {
-        x         = {relative = 0.0; offset = 0;};
+        x         = {relative = 0.5; offset = 0;};
         y         = {relative = 0.9; offset = 0;};
         length    = {relative = 0.2; offset = 0;};
         thickness = 24;

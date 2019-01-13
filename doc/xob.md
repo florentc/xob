@@ -1,6 +1,6 @@
 % XOB(1) xob 0.1.1 | xob Manual
 % Florent Ch
-% August 2018
+% January 2019
 
 # NAME
 
@@ -163,7 +163,7 @@ This example configuration file provides two styles "volume" and "backlight". In
 ## DEFAULT CONFIGURATION FILE
 
     default = {
-        x         = {relative = 0.0; offset = 0;};
+        x         = {relative = 0.5; offset = 0;};
         y         = {relative = 0.9; offset = 0;};
         length    = {relative = 0.2; offset = 0;};
         thickness = 24;
