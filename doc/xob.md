@@ -234,5 +234,6 @@ xob works well under multihead setups but there is no easy way to configure the 
 * Vertical mode.
 * New overflow styles.
 * Smooth transitions.
+* Configuration through X resources.
 
 Contributions and critics are welcome.
