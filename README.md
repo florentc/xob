@@ -25,7 +25,7 @@ There is also an [Archlinux package on the AUR](https://aur.archlinux.org/packag
 
 ### Try it out
 
-Lauch xob in a terminal, enter a value (positive integer), press return. Suffix a value with '!' for alternate color. Use a value above the maximum (default: 100) to see how overflows are displayed.
+Launch xob in a terminal, enter a value (positive integer), press return. Suffix a value with '!' for alternate color. Use a value above the maximum (default: 100) to see how overflows are displayed.
 
 ### General case
 
@@ -41,7 +41,7 @@ Set up your environment so that after updating audio volume, backlight intensity
 
     echo 43 > /tmp/xobpipe
 
-Adapt this use-case to your workflow (scripts, callbacks, or keybindings handled the window manager).
+Adapt this use-case to your workflow (scripts, callbacks, or keybindings handled by the window manager).
 
 ### Ready to use volume bar
 
@@ -92,7 +92,7 @@ When starting, xob looks for the configuration file in the following order:
 3. `~/.config/xob/styles.cfg`
 4. Under the system configuration directory (determined during build process): e.g. /etc/xob/styles.cfg or /usr/local/etc/xob/styles.cfg
 
-Consult the man page for detailed information about the configuration file and the available options. The following `styles.cfg` defines a single style called "default" that showcases all the possible options set to the default values. The configration file may contain additional styles to choose among using the **-s** argument.
+Consult the man page for detailed information about the configuration file and the available options. The following `styles.cfg` defines a single style called "default" that showcases all the possible options set to the default values. The configuration file may contain additional styles to choose among using the **-s** argument.
 
     default = {
         x         = {relative = 0.5; offset = 0;};
@@ -250,7 +250,7 @@ There is no support for panel integration. You can however use absolute position
 
 xob works well under multihead setups but there is no easy way to configure the position of the bar for now. In a dual monitor setup with the default configuration, the horizontal centering is not local to one of the two monitors. It is global. The bar might be split in two: one part on each screen.  You will probably find it easier to fall back to absolute positioning much like the last example in the table in section "Positioning". If you want an xob instance to be centered (horizontally) on the far-right monitor, set *x.relative* to 1.0 (anchored on the far right) and the *x.offset* to minus half the width of that screen.
 
-## PLANNED FEATURES
+## Planned features
 
 * Multihead-friendly configuration.
 * Vertical mode.

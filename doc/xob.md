@@ -12,7 +12,7 @@ xob - A lightweight overlay volume/backlight/progress/anything bar for the X Win
 
 # DESCRIPTION
 
-**xob** (the X Overlay Bar) displays numerical values fed through the standard input on a bar that looks like the volume bar on a television screen. When a new integer value is read on the standard input, the bar is displayed over other windows for a configurable amount of time and then disapears until it is fed a new value. When a value is followed by a bang '!', an alternative color is used. This feature makes it possible to provide visual feedback for alternative states (e.g. unmuted/muted, auto/manual). The appearance is configurable through options described in this manual. The way overflows (when the value exceeds the maximum) are displayed is also configurable. The program ends when it reads "end" or "quit" (or actually anything else than a number).
+**xob** (the X Overlay Bar) displays numerical values fed through the standard input on a bar that looks like the volume bar on a television screen. When a new integer value is read on the standard input, the bar is displayed over other windows for a configurable amount of time and then disappears until it is fed a new value. When a value is followed by a bang '!', an alternative color is used. This feature makes it possible to provide visual feedback for alternative states (e.g. unmuted/muted, auto/manual). The appearance is configurable through options described in this manual. The way overflows (when the value exceeds the maximum) are displayed is also configurable. The program ends when it reads "end" or "quit" (or actually anything else than a number).
 
 # OPTIONS
 
