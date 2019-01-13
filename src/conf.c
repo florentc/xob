@@ -1,5 +1,5 @@
 /* xob - A lightweight overlay volume/anything bar for the X Window System.
- * Copyright (C) 2018 Florent Ch.
+ * Copyright (C) 2019 Florent Ch.
  *
  * xob is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -45,7 +45,6 @@ static int config_setting_lookup_dim(const config_setting_t *setting,
                 if (config_setting_lookup_int(dim_setting, "offset", &abs))
                 {
                     value->abs = abs;
-                    success_status = CONFIG_TRUE;
                 }
             }
             else
@@ -85,6 +84,7 @@ static int config_setting_lookup_color(const config_setting_t *setting,
             strlen(endptr) == 0 && color >= 0 && color <= 0xFFFFFF)
         {
             *value = colorstring;
+            success_status = CONFIG_TRUE;
         }
         else
         {
@@ -108,10 +108,12 @@ static int config_setting_lookup_colorspec(const config_setting_t *setting,
 
     if (colorspec_setting != NULL)
     {
-        config_setting_lookup_color(colorspec_setting, "fg", &(value->fg));
-        config_setting_lookup_color(colorspec_setting, "bg", &(value->bg));
-        config_setting_lookup_color(colorspec_setting, "border",
-                                    &(value->border));
+        success_status = config_setting_lookup_color(colorspec_setting, "fg",
+                                                     &(value->fg)) &&
+                         config_setting_lookup_color(colorspec_setting, "bg",
+                                                     &(value->bg)) &&
+                         config_setting_lookup_color(
+                             colorspec_setting, "border", &(value->border));
     }
 
     return success_status;
