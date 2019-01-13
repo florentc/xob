@@ -22,6 +22,27 @@
 #include <stdlib.h>
 #include <string.h>
 
+static int config_setting_lookup_float_or_int(const config_setting_t *setting,
+                                              const char *name, double *value)
+{
+    int fallback_value;
+    int success_status;
+
+    success_status = CONFIG_FALSE;
+
+    if (config_setting_lookup_float(setting, name, value))
+    {
+        success_status = CONFIG_TRUE;
+    }
+    else if (config_setting_lookup_int(setting, name, &fallback_value))
+    {
+        *value = (double)fallback_value;
+        success_status = CONFIG_TRUE;
+    }
+
+    return success_status;
+}
+
 static int config_setting_lookup_dim(const config_setting_t *setting,
                                      const char *name, Dim *value)
 {
@@ -35,7 +56,7 @@ static int config_setting_lookup_dim(const config_setting_t *setting,
 
     if (dim_setting != NULL)
     {
-        if (config_setting_lookup_float(dim_setting, "relative", &rel))
+        if (config_setting_lookup_float_or_int(dim_setting, "relative", &rel))
         {
             if (rel >= 0 && rel <= 1)
             {
@@ -54,14 +75,6 @@ static int config_setting_lookup_dim(const config_setting_t *setting,
                         "Out of range relative value.\n",
                         config_setting_source_line(dim_setting));
             }
-        }
-        else
-        {
-            fprintf(stderr,
-                    "Error: in configuration, line %d - "
-                    "Invalid (maybe a missing dot '.') "
-                    "or missing relative value.\n",
-                    config_setting_source_line(dim_setting));
         }
     }
 
