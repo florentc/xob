@@ -28,8 +28,8 @@ typedef struct
     bool valid;
     int value;
     Show_mode show_mode;
-} Input_Value;
+} Input_value;
 
-Input_Value parse_input(void);
+Input_value parse_input(void);
 
 #endif

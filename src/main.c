@@ -166,7 +166,7 @@ int main(int argc, char *argv[])
     /* Display */
     bool displayed = false;
     bool listening = true;
-    Input_Value input_value;
+    Input_value input_value;
     Display_context display_context = init(style);
 
     if (display_context.x.display == NULL)
@@ -225,9 +225,9 @@ int main(int argc, char *argv[])
     return EXIT_SUCCESS;
 }
 
-Input_Value parse_input(void)
+Input_value parse_input(void)
 {
-    Input_Value input_value;
+    Input_value input_value;
     char altflag;
 
     input_value.valid = false;
