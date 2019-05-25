@@ -12,7 +12,10 @@ xob depends on libx11 and libconfig.
     make
     make install
 
-There is also an [Archlinux package on the AUR](https://aur.archlinux.org/packages/xob/).
+As of May 2019, there are packages for the following Linux distributions:
+
+* [Arch Linux package on the AUR](https://aur.archlinux.org/packages/xob/)
+* [Void Linux package](https://github.com/void-linux/void-packages/tree/master/srcpkgs/xob)
 
 ## Usage
 
