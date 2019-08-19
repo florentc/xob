@@ -55,7 +55,7 @@ If you are using pulseaudio, use the `pulse_listener.py` Python script (depends 
 ./pulse_listener.py | xob
 ```
 
-This script listens to volume and mute events. No matter how the volume changes (keybindings, pulse control panel, headphones plugged-in), it will instantly show up the volume bar. You might need to adapt the `sink_id`.
+This script listens to volume and mute events. No matter how the volume changes (keybindings, pulse control panel, headphones plugged-in), it will instantly show up the volume bar. You might need to adapt the `SINK_ID` constant in the script to fit your needs.
 
 ## Appearance
 
