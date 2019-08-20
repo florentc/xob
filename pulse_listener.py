@@ -36,14 +36,18 @@ with pulsectl.Pulse() as pulse_controller:
         pulse_controller.event_callback_set(
             create_handle_event_function(SINK_ID),
         )
+        current_volume = get_current_volume(pulse_controller, SINK_ID)
 
         while True:
             pulse_controller.event_listen()
-            print(get_current_volume(pulse_controller, SINK_ID), end="")
-            if is_muted(pulse_controller, SINK_ID):
-                print("!")
-            else:
-                print("")
-            sys.stdout.flush()
+            new_volume = get_current_volume(pulse_controller, SINK_ID)
+            if current_volume != new_volume:
+                current_volume = new_volume
+                print(current_volume, end="")
+                if is_muted(pulse_controller, SINK_ID):
+                    print("!")
+                else:
+                    print("")
+                sys.stdout.flush()
     except (pulsectl.PulseLoopStop, KeyboardInterrupt):
         pass
