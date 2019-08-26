@@ -37,14 +37,17 @@ with pulsectl.Pulse() as pulse_controller:
             create_handle_event_function(SINK_ID),
         )
         current_volume = get_current_volume(pulse_controller, SINK_ID)
+        currently_muted = is_muted(pulse_controller, SINK_ID)
 
         while True:
             pulse_controller.event_listen()
             new_volume = get_current_volume(pulse_controller, SINK_ID)
-            if current_volume != new_volume:
+            newly_muted = is_muted(pulse_controller, SINK_ID)
+            if current_volume != new_volume or currently_muted != newly_muted:
                 current_volume = new_volume
+                currently_muted = newly_muted
                 print(current_volume, end="")
-                if is_muted(pulse_controller, SINK_ID):
+                if currently_muted:
                     print("!")
                 else:
                     print("")
