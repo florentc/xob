@@ -12,11 +12,9 @@ xob depends on libx11 and libconfig.
     make
     make install
 
-As of May 2019, there are packages for the following Linux distributions:
+Packages are available in the following repositories:
 
-* [Arch Linux package on the AUR](https://aur.archlinux.org/packages/xob/)
-* [Source Mage GNU/Linux](http://codex.sourcemage.org/test/wm-addons/xob)
-* [Void Linux package](https://github.com/void-linux/void-packages/tree/master/srcpkgs/xob)
+[![Packaging status](https://repology.org/badge/vertical-allrepos/xob.svg)](https://repology.org/project/xob/versions)
 
 ## Usage
 
