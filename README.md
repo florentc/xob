@@ -97,13 +97,14 @@ When starting, xob looks for the configuration file in the following order:
 Consult the man page for detailed information about the configuration file and the available options. The following `styles.cfg` defines a single style called "default" that showcases all the possible options set to the default values. The configuration file may contain additional styles to choose among using the **-s** argument.
 
     default = {
-        x         = {relative = 0.5; offset = 0;};
-        y         = {relative = 0.9; offset = 0;};
-        length    = {relative = 0.2; offset = 0;};
+        x         = {relative = 1; offset = -48;};
+        y         = {relative = 0.5; offset = 0;};
+        length    = {relative = 0.3; offset = 0;};
         thickness = 24;
         outline   = 3;
         border    = 4;
         padding   = 3;
+        orientation = "vertical";
 
         overflow = "proportional";
 
@@ -131,9 +132,13 @@ Consult the man page for detailed information about the configuration file and t
         };
     };
 
+### Orientation
+
+The bar can be horizontal (it fills up from left to right) or vertical (it fills up from bottom to top) depending on option `orientation`.
+
 ### Positionning
 
-The horizontal `x` and vertical `y` position of the bar is determined by a relative position on the screen (0.0 and 1.0 on the edges, 0.5 in the middle) and an offset in pixels from that relative position. Likewise, the length of the bar has a relative component (1.0 full-width, 0.0 collapsed) and an offset in pixels. Here are some examples.
+The horizontal `x` and vertical `y` position of the bar is determined by a relative position on the screen (0.0 and 1.0 on the edges, 0.5 in the middle) and an offset in pixels from that relative position. Likewise, the length of the bar has a relative component (1.0 all available space, 0.0 collapsed) and an offset in pixels. Here are some examples.
 
 Illustration | Relative `x` | Offset `x` | Relative `y` | Offset `y` | Relative `length` | Offset `length` 
 ------------ | ------------ | ---------- | ------------ | ---------- | ----------------- | --------------- 

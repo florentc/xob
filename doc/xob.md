@@ -1,6 +1,6 @@
 % XOB(1) xob 0.1.1 | xob Manual
 % Florent Ch
-% January 2019
+% March 2020
 
 # NAME
 
@@ -60,6 +60,7 @@ Options can be grouped together inside curly brackets. Some options expect a gro
     };
 
 ## OPTIONS
+
                     length
           ───────────────────────────
     ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░] outline
@@ -76,26 +77,29 @@ Options can be grouped together inside curly brackets. Some options expect a gro
 
 In the following, a dot "." means "suboption". For instance "color.normal.fg" means "The suboption fg of the suboption normal of option color".
 
-**x.relative** *ratio* (default: 0.5)
+**orientation** *"horizontal" | "vertical"* (default: vertical)
+:   Orientation of the bar which either fills up from left to right ("horizontal") or bottom to top ("vertical").
+
+**x.relative** *ratio* (default: 1.0)
 :   Relative horizontal position on screen between 0.0 (left edge) and 1.0 (right edge). Centered by default (0.5).
 
-**x.offset** *pixels* (default: 0)
+**x.offset** *pixels* (default: -48)
 :   Horizontal offset in pixels from the position specified with **x.relative**. This can be used for absolute positioning from an edge of the screen, creating gaps, stacking bars, etc.
 
-**y.relative** *ratio* (default: 0.9)
+**y.relative** *ratio* (default: 0.5)
 :   Relative vertical position on screen between 0.0 (top edge) and 1.0 (bottom edge).
 
 **y.offset** *pixels* (default: 0)
 :   Vertical offset in pixels from the position specified with **y.relative**. This can be used for absolute positioning from an edge of the screen, creating gaps, stacking bars, etc.
 
-**length.relative** *ratio* (default: 0.2)
-:   Relative width of the bar between 0.0 (collapsed) and 1.0 (full screen width).
+**length.relative** *ratio* (default: 0.3)
+:   Relative length (horizontal bar) or height (vertical bar) of the bar between 0.0 (collapsed) and 1.0 (full available length on screen).
 
 **length.offset** *pixels* (default: 0)
-:   Width offset in pixels from the width specified with **length.relative**. This can be used for absolute sizes (using positive values and 0 as **length.relative**) or creating gaps (using negative values and 1 as **length.relative**).
+:   Length offset in pixels from the relative length specified with **length.relative**. This can be used for absolute sizes (using positive values and 0 as **length.relative**) or creating gaps (using negative values and 1 as **length.relative**).
 
 **thickness.absolute** *positive integer* (default: 24)
-:   Height in pixels without taking borders into account.
+:   Height (horizontal bar) or width (vertical bar) in pixels without taking borders into account.
 
 **border** *pixels* (default: 4)
 :   Size of the border in pixels.
@@ -163,13 +167,14 @@ This example configuration file provides two styles "volume" and "backlight". In
 ## DEFAULT CONFIGURATION FILE
 
     default = {
-        x         = {relative = 0.5; offset = 0;};
-        y         = {relative = 0.9; offset = 0;};
-        length    = {relative = 0.2; offset = 0;};
+        x         = {relative = 1; offset = -48;};
+        y         = {relative = 0.5; offset = 0;};
+        length    = {relative = 0.3; offset = 0;};
         thickness = 24;
         outline   = 3;
         border    = 4;
         padding   = 3;
+        orientation = "vertical";
 
         overflow = "proportional";
 
@@ -231,7 +236,6 @@ xob works well under multihead setups but there is no easy way to configure the 
 # PLANNED FEATURES
 
 * Multihead-friendly configuration.
-* Vertical mode.
 * New overflow styles.
 * Smooth transitions.
 * Configuration through X resources.

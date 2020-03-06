@@ -1,5 +1,5 @@
 /* xob - A lightweight overlay volume/anything bar for the X Window System.
- * Copyright (C) 2018 Florent Ch.
+ * Copyright (C) 2020 Florent Ch.
  *
  * xob is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -39,6 +39,12 @@ typedef enum
     PROPORTIONAL
 } Overflow_mode;
 
+typedef enum
+{
+    HORIZONTAL,
+    VERTICAL
+} Orientation;
+
 typedef struct
 {
     Dim x;
@@ -48,6 +54,7 @@ typedef struct
     int border;
     int padding;
     int outline;
+    Orientation orientation;
     Overflow_mode overflow;
     struct
     {
@@ -62,23 +69,24 @@ typedef struct
 #define DEFAULT_CONFIGURATION (Style) {\
         .x =\
         {\
-            .rel = 0.5,\
-            .abs = 0\
+            .rel = 1.0,\
+            .abs = -48\
         },\
         .y =\
         {\
-            .rel = 0.9,\
+            .rel = 0.5,\
             .abs = 0\
         },\
         .length =\
         {\
-            .rel = 0.2,\
+            .rel = 0.3,\
             .abs = 0\
         },\
         .thickness = 24,\
         .border = 4,\
         .padding = 3,\
         .outline = 3,\
+        .orientation = VERTICAL,\
         .overflow = PROPORTIONAL,\
         .color =\
         {\

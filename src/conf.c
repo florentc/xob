@@ -1,5 +1,5 @@
 /* xob - A lightweight overlay volume/anything bar for the X Window System.
- * Copyright (C) 2019 Florent Ch.
+ * Copyright (C) 2020 Florent Ch.
  *
  * xob is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -155,7 +155,40 @@ static int config_setting_lookup_overflowmode(const config_setting_t *setting,
         {
             fprintf(stderr,
                     "Error: in configuration, line %d - "
-                    "Invalid overflow mode.\n",
+                    "Invalid overflow mode. Expected \"hidden\" or "
+                    "\"proportional\"\n",
+                    config_setting_source_line(setting));
+        }
+    }
+
+    return success_status;
+}
+
+static int config_setting_lookup_orientation(const config_setting_t *setting,
+                                             const char *name,
+                                             Orientation *value)
+{
+    const char *stringvalue;
+    int success_status = CONFIG_FALSE;
+
+    if (config_setting_lookup_string(setting, name, &stringvalue))
+    {
+        if (strcmp(stringvalue, "horizontal") == 0)
+        {
+            *value = HORIZONTAL;
+            success_status = CONFIG_TRUE;
+        }
+        else if (strcmp(stringvalue, "vertical") == 0)
+        {
+            *value = VERTICAL;
+            success_status = CONFIG_TRUE;
+        }
+        else
+        {
+            fprintf(stderr,
+                    "Error: in configuration, line %d - "
+                    "Invalid orientation. Expected \"horizontal\" or "
+                    "\"vertical\".\n",
                     config_setting_source_line(setting));
         }
     }
@@ -184,6 +217,8 @@ Style parse_style_config(FILE *file, const char *stylename, Style default_style)
             config_setting_lookup_dim(style_config, "x", &style.x);
             config_setting_lookup_dim(style_config, "y", &style.y);
             config_setting_lookup_dim(style_config, "length", &style.length);
+            config_setting_lookup_orientation(style_config, "orientation",
+                                              &style.orientation);
             config_setting_lookup_overflowmode(style_config, "overflow",
                                                &style.overflow);
             color_config = config_setting_get_member(style_config, "color");

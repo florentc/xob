@@ -1,5 +1,5 @@
 /* xob - A lightweight overlay volume/anything bar for the X Window System.
- * Copyright (C) 2018 Florent Ch.
+ * Copyright (C) 2020 Florent Ch.
  *
  * xob is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,6 +17,7 @@
 
 #include "display.h"
 
+#include <X11/Xlib.h>
 #include <X11/Xutil.h>
 
 /* Keep value in range */
@@ -25,6 +26,16 @@ static int fit_in(int value, int min, int max)
     value = (value < min) ? min : value;
     value = (value > max) ? max : value;
     return value;
+}
+
+/* Horizontal and vertical size depending on orientation */
+static int size_x(Geometry_context g)
+{
+    return g.orientation == HORIZONTAL ? g.length : g.thickness;
+}
+static int size_y(Geometry_context g)
+{
+    return g.orientation == HORIZONTAL ? g.thickness : g.length;
 }
 
 /* Get graphic context from a hex color specification string */
@@ -51,31 +62,55 @@ static void draw_empty(X_context x, Geometry_context g, Gc_colorset color)
 {
     /* Outline */
     XFillRectangle(x.display, x.window, color.bg, 0, 0,
-                   2 * (g.outline + g.border + g.padding) + g.width,
-                   2 * (g.outline + g.border + g.padding) + g.height);
+                   2 * (g.outline + g.border + g.padding) + size_x(g),
+                   2 * (g.outline + g.border + g.padding) + size_y(g));
     /* Border */
     XFillRectangle(x.display, x.window, color.border, g.outline, g.outline,
-                   2 * (g.border + g.padding) + g.width,
-                   2 * (g.border + g.padding) + g.height);
+                   2 * (g.border + g.padding) + size_x(g),
+                   2 * (g.border + g.padding) + size_y(g));
     /* Padding */
     XFillRectangle(x.display, x.window, color.bg, g.outline + g.border,
-                   g.outline + g.border, 2 * g.padding + g.width,
-                   2 * g.padding + g.height);
+                   g.outline + g.border, 2 * g.padding + size_x(g),
+                   2 * g.padding + size_y(g));
 }
 
 /* Draw a given length of filled bar with the given color */
-static void draw_content(X_context x, Geometry_context g, int length, GC color)
+static void draw_content(X_context x, Geometry_context g, int filled_length,
+                         GC color)
 {
-    XFillRectangle(x.display, x.window, color, g.outline + g.border + g.padding,
-                   g.outline + g.border + g.padding, length, g.height);
+    if (g.orientation == HORIZONTAL)
+    {
+        XFillRectangle(
+            x.display, x.window, color, g.outline + g.border + g.padding,
+            g.outline + g.border + g.padding, filled_length, g.thickness);
+    }
+    else
+    {
+        XFillRectangle(
+            x.display, x.window, color, g.outline + g.border + g.padding,
+            g.outline + g.border + g.padding + g.length - filled_length,
+            g.thickness, filled_length);
+    }
 }
+
 /* Draw a separator (padding-sized gap) at the given position */
 static void draw_separator(X_context x, Geometry_context g, int position,
                            GC color)
 {
-    XFillRectangle(x.display, x.window, color,
-                   g.outline + g.border + (g.padding / 2) + position,
-                   g.outline + g.border + g.padding, g.padding, g.height);
+    if (g.orientation == HORIZONTAL)
+    {
+        XFillRectangle(x.display, x.window, color,
+                       g.outline + g.border + (g.padding / 2) + position,
+                       g.outline + g.border + g.padding, g.padding,
+                       g.thickness);
+    }
+    else
+    {
+        XFillRectangle(
+            x.display, x.window, color, g.outline + g.border + g.padding,
+            g.outline + g.border + (g.padding / 2) + g.length - position,
+            g.thickness, g.padding);
+    }
 }
 
 /* PUBLIC Returns a new display context from a given configuration. If the
@@ -89,6 +124,7 @@ Display_context init(Style conf)
     int topleft_x;
     int topleft_y;
     int fat_layer;
+    int available_length;
 
     dc.x.display = XOpenDisplay(NULL);
     if (dc.x.display != NULL)
@@ -104,32 +140,39 @@ Display_context init(Style conf)
         dc.geometry.outline = conf.outline;
         dc.geometry.border = conf.border;
         dc.geometry.padding = conf.padding;
-        dc.geometry.height = conf.thickness;
+        dc.geometry.thickness = conf.thickness;
+        dc.geometry.orientation = conf.orientation;
         fat_layer =
             dc.geometry.padding + dc.geometry.border + dc.geometry.outline;
-        dc.geometry.width = fit_in(
-            WidthOfScreen(dc.x.screen) * conf.length.rel + conf.length.abs, 0,
-            WidthOfScreen(dc.x.screen) - 2 * fat_layer);
+
+        /* Orientation-related dimensions */
+        available_length = dc.geometry.orientation == HORIZONTAL
+                               ? WidthOfScreen(dc.x.screen)
+                               : HeightOfScreen(dc.x.screen);
+
+        dc.geometry.length =
+            fit_in(available_length * conf.length.rel + conf.length.abs, 0,
+                   available_length - 2 * fat_layer);
 
         /* Compute position of the top-left corner */
         topleft_x = fit_in(WidthOfScreen(dc.x.screen) * conf.x.rel -
-                               (dc.geometry.width + 2 * fat_layer) / 2,
+                               (size_x(dc.geometry) + 2 * fat_layer) / 2,
                            0,
                            WidthOfScreen(dc.x.screen) -
-                               (dc.geometry.width + 2 * fat_layer)) +
+                               (size_x(dc.geometry) + 2 * fat_layer)) +
                     conf.x.abs;
         topleft_y = fit_in(HeightOfScreen(dc.x.screen) * conf.y.rel -
-                               (dc.geometry.height + 2 * fat_layer) / 2,
+                               (size_y(dc.geometry) + 2 * fat_layer) / 2,
                            0,
                            HeightOfScreen(dc.x.screen) -
-                               (dc.geometry.height + 2 * fat_layer)) +
+                               (size_y(dc.geometry) + 2 * fat_layer)) +
                     conf.y.abs;
 
         /* Creation of the window */
         dc.x.window = XCreateWindow(
             dc.x.display, root, topleft_x, topleft_y,
-            dc.geometry.width + 2 * fat_layer,
-            dc.geometry.height + 2 * fat_layer, 0,
+            size_x(dc.geometry) + 2 * fat_layer,
+            size_y(dc.geometry) + 2 * fat_layer, 0,
             DefaultDepth(dc.x.display, dc.x.screen_number), CopyFromParent,
             DefaultVisual(dc.x.display, dc.x.screen_number), CWOverrideRedirect,
             &window_attributes);
@@ -209,15 +252,15 @@ Display_context show(Display_context dc, int value, int cap,
 
     /* Content */
     draw_content(dc.x, dc.geometry,
-                 fit_in(value, 0, cap) * dc.geometry.width / cap, colorset.fg);
+                 fit_in(value, 0, cap) * dc.geometry.length / cap, colorset.fg);
 
     /* Proportional overflow : draw separator */
     if (value > cap && overflow_mode == PROPORTIONAL &&
-        cap * dc.geometry.width / value > dc.geometry.padding)
+        cap * dc.geometry.length / value > dc.geometry.padding)
     {
-        draw_content(dc.x, dc.geometry, cap * dc.geometry.width / value,
+        draw_content(dc.x, dc.geometry, cap * dc.geometry.length / value,
                      colorset_overflow_proportional.fg);
-        draw_separator(dc.x, dc.geometry, cap * dc.geometry.width / value,
+        draw_separator(dc.x, dc.geometry, cap * dc.geometry.length / value,
                        colorset.bg);
     }
 
