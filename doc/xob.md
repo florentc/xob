@@ -20,7 +20,7 @@ xob - A lightweight overlay volume/backlight/progress/anything bar for the X Win
 :   Number of steps in the bar (and maximum value since 0 is always the minimum value). By default: 100.
 
 **-t** *timeout*
-:   Number of seconds between an update and the vanishing of the bar. If set to 0, the bar is never hidden. By default: 1.
+:   Duration in milliseconds between an update and the vanishing of the bar. If set to 0, the bar is never hidden. By default: 1000 (1 second).
 
 **-s** *style*
 :   Style (appearance) to choose in the configuration file. By default: default.

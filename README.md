@@ -21,7 +21,7 @@ Packages are available in the following repositories:
     xob [-m maximum] [-t timeout] [-c configfile] [-s style]
 
 * **maximum** Maximum value/number of steps in the bar (default: 100). 0 is always the minimum.
-* **timeout** Time in seconds the bar stays on-screen after an update (default: 1). 0 means the bar is never hidden.
+* **timeout** Duration in milliseconds the bar remains on-screen after an update (default: 1000). 0 means the bar is never hidden.
 * **configfile** Path to a file that specifies styles (appearances).
 * **style** Chosen style from the configuration (default: the style named "default").
 

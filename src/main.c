@@ -1,5 +1,5 @@
 /* xob - A lightweight overlay volume/anything bar for the X Window System.
- * Copyright (C) 2018 Florent Ch.
+ * Copyright (C) 2020 Florent Ch.
  *
  * xob is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,7 +30,7 @@
 int main(int argc, char *argv[])
 {
     int cap = 100;
-    int timeout = 1;
+    int timeout = 1000;
 
     char *arg_config_file_path = NULL;
     char *style_name = DEFAULT_STYLE;
@@ -58,6 +58,17 @@ int main(int argc, char *argv[])
                 fprintf(stderr, "Invalid timeout: must be a natural number.\n");
                 exit(EXIT_FAILURE);
             }
+            else if (timeout == 0)
+            {
+                fprintf(stderr, "Info: no timeout, the bar will "
+                                "remain on-screen.\n");
+            }
+            else if (timeout < 100)
+            {
+                fprintf(
+                    stderr,
+                    "Warning: timeout is low, the bar may not be visible.\n");
+            }
             break;
         case 'c':
             arg_config_file_path = optarg;
@@ -76,9 +87,11 @@ int main(int argc, char *argv[])
                     argv[0]);
             fprintf(stderr, "    -m <non-zero natural>"
                             " maximum value (0 is always the minimum)\n");
-            fprintf(stderr, "    -t <natural>         "
-                            " number of seconds before the gauge is hidden "
-                            "after an update or 0 if always on screen\n");
+            fprintf(stderr,
+                    "    -t <natural>         "
+                    " duration in milliseconds between an update and the "
+                    "vanishing of the bar"
+                    "after an update or 0 if always on screen\n");
             fprintf(stderr, "    -c <filepath>        "
                             " configuration file specifying styles\n");
             fprintf(stderr, "    -s <style name>      "
@@ -185,8 +198,8 @@ int main(int argc, char *argv[])
             /* Waiting for input on stdin or time to hide the gauge */
             FD_ZERO(&fds);
             FD_SET(STDIN_FILENO, &fds);
-            tv.tv_sec = timeout;
-            tv.tv_usec = 0;
+            tv.tv_sec = timeout / 1000;
+            tv.tv_usec = 1000 * (timeout % 1000);
             switch (select(1, &fds, NULL, NULL,
                            /* No timeout if already hidden */
                            displayed && timeout > 0 ? &tv : NULL))
