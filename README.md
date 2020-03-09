@@ -3,7 +3,9 @@ xob - X Overlay Bar
 
 ![Illustration screencast](/doc/img/screencast.gif)
 
-A lightweight configurable overlay volume/backlight/progress/anything bar for the X Window System. Each time a new value is read on the standard input, it is displayed as a tv-like bar over other windows. It then vanishes after a configurable amount of time. A value followed by a bang '!' is displayed using an alternate color to account for special states (e.g. muted audio). There is also support for overflows (when the value exceeds the maximum).
+A lightweight configurable overlay volume/backlight/progress/anything bar for the X Window System (and Wayland compositors with XWayland). Each time a new value is read on the standard input, it is displayed as a tv-like bar over other windows. It then vanishes after a configurable amount of time. A value followed by a bang '!' is displayed using an alternate color to account for special states (e.g. muted audio). There is also support for overflows (when the value exceeds the maximum).
+
+![Features](/doc/img/features.svg)
 
 ## Installation
 
@@ -134,7 +136,7 @@ Consult the man page for detailed information about the configuration file and t
 
 ### Orientation
 
-The bar can be horizontal (it fills up from left to right) or vertical (it fills up from bottom to top) depending on option `orientation`.
+The bar can be horizontal (it fills up from left to right) or vertical (it fills up from bottom to top) depending on option `orientation`. The default value is `"vertical"`.
 
 ### Positionning
 
@@ -217,7 +219,7 @@ Here is a style that integrates well into default i3wm. Add it to your `styles.c
 
 > "What happens if several bars are displayed at the same time?"
 
-You can run and distinguish two or more instances of xob with different styles (including color, position, extreme values, etc.). To do so, specify and use different styles from your configuration file (or use different configuration files). To prevent the bars from overlapping, make use of the offset options. For instance you can offset a bar to the top or bottom (see the following example configuration file).
+You can run and distinguish two or more instances of xob with different styles (including color, position, extreme values, etc.). To do so, specify and use different styles from your configuration file (or use different configuration files). To prevent the bars from overlapping, make use of the offset options. For instance, in horizontal mode, you can offset a bar to the top or bottom (see the following example configuration file).
  
     volume = {
         thickness = 24;
@@ -228,6 +230,7 @@ You can run and distinguish two or more instances of xob with different styles (
             relative = 0.9;
             offset = 0;
         };
+        orientation = "horizontal";
     };
     backlight = {
         thickness = 24;
@@ -239,6 +242,7 @@ You can run and distinguish two or more instances of xob with different styles (
             # To prevent overlap with the volume bar if displayed at the same time
             offset = -30;
         };
+        orientation = "horizontal";
 
         color = {
             normal = {
@@ -253,14 +257,19 @@ You can run and distinguish two or more instances of xob with different styles (
 
 There is no support for panel integration. You can however use absolute positioning and no timeout (`-t 0`) to mimic this behaviour in simple situations.
 
-> "How to set up xob with multiple monitors?"
+> "How about multiple monitors?"
 
-xob works well under multihead setups but there is no easy way to configure the position of the bar for now. In a dual monitor setup with the default configuration, the horizontal centering is not local to one of the two monitors. It is global. The bar might be split in two: one part on each screen.  You will probably find it easier to fall back to absolute positioning much like the last example in the table in section "Positioning". If you want an xob instance to be centered (horizontally) on the far-right monitor, set *x.relative* to 1.0 (anchored on the far right) and the *x.offset* to minus half the width of that screen.
+xob works well under multihead setups. The `x`, `y`, and `length` style options refer to the combined screen surface. By default the bar is vertical near the right edge of the rightmost monitor. In vertical layouts, you may prefer to switch the bar to horizontal mode as follows to avoid splits.
+
+    horizontal = {
+        x         = {relative = 0.5; offset = 0;};
+        y         = {relative = 1; offset = -48;};
+        orientation = "horizontal";
+    };
 
 ## Planned features
 
 * Multihead-friendly configuration.
-* Vertical mode.
 * New overflow styles.
 * Smooth transitions.
 * Configuration through X resources.
