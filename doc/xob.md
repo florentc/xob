@@ -1,4 +1,4 @@
-% XOB(1) xob 0.1.1 | xob Manual
+% XOB(1) xob 0.2 | xob Manual
 % Florent Ch
 % March 2020
 
