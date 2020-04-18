@@ -90,7 +90,7 @@ int main(int argc, char *argv[])
             fprintf(stderr,
                     "    -t <natural>         "
                     " duration in milliseconds between an update and the "
-                    "vanishing of the bar"
+                    "vanishing of the bar "
                     "after an update or 0 if always on screen\n");
             fprintf(stderr, "    -c <filepath>        "
                             " configuration file specifying styles\n");
