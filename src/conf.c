@@ -87,15 +87,16 @@ static int config_setting_lookup_color(const config_setting_t *setting,
 {
     const char *colorstring;
     char *endptr;
-    int color;
+    unsigned int color;
     int success_status = CONFIG_FALSE;
 
     if (config_setting_lookup_string(setting, name, &colorstring))
     {
         errno = 0;
-        color = strtol(colorstring + 1, &endptr, 16);
-        if ((strlen(colorstring) == 7 && colorstring[0] == '#' && errno == 0 &&
-            strlen(endptr) == 0 && color >= 0 && color <= 0xFFFFFF) || colorstring[0]=='r') //TODO Check rgba colors
+        color = (unsigned int) strtol(colorstring + 1, &endptr, 16);
+        char cslen = strlen(colorstring);
+        if (cslen >= 7 && cslen <= 9 && colorstring[0] == '#' && errno == 0 &&
+            strlen(endptr) == 0 && color <= 0xFFFFFFFF)
         {
             *value = colorstring;
             success_status = CONFIG_TRUE;
