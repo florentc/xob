@@ -1,4 +1,4 @@
-LIBS    = x11 libconfig
+LIBS    = x11 libconfig xrender
 CFLAGS  += $(shell pkg-config --cflags $(LIBS)) -std=c99 -Wall -Wextra -pedantic
 LDFLAGS += $(shell pkg-config --libs $(LIBS))
 
@@ -17,6 +17,10 @@ sysconfdir      ?= $(prefix)/etc
 datarootdir     ?= $(prefix)/share
 mandir          ?= $(datarootdir)/man
 man1dir         ?= $(mandir)/man1
+
+ifdef enable_alpha
+	CFLAGS += -DALPHA=1
+endif
 
 all: $(PROGRAM)
 
