@@ -65,18 +65,17 @@ static Color color_from_string(X_context x, const char *hexcolorstring)
 }
 
 /* Draw a rectangle with the given size, position and color */
-static void fill_rectangle(Display *display, Drawable d, Color c, int x, int y, unsigned int w, unsigned int h)
+static void fill_rectangle(Display *display, Window dest, Color c, int x, int y, unsigned int w, unsigned int h)
 {
 	#ifndef ALPHA
-		XFillRectangle(display, d, c, x, y, w, h);
+		XFillRectangle(display, dest, c, x, y, w, h);
 	#else
-        // WARN: Assuming that the _Drawable d_ is a window
         XWindowAttributes attrib;
-        XGetWindowAttributes(display, d, &attrib);
+        XGetWindowAttributes(display, dest, &attrib);
         XRenderPictFormat *pfmt = XRenderFindVisualFormat(display, attrib.visual);
 
-		Picture dst = XRenderCreatePicture(display, d, pfmt, 0, 0);
-		XRenderFillRectangle (display, PictOpSrc, dst,c,x,y,w,h);
+		Picture pict = XRenderCreatePicture(display, dest, pfmt, 0, 0);
+		XRenderFillRectangle (display, PictOpSrc, pict, c, x, y, w, h);
 	#endif
 }
 
