@@ -333,10 +333,6 @@ Display_context show(Display_context dc, int value, int cap,
         else
             colorset = dc.color.altoverflow;
         break;
-    default:
-        // TODO Show Warning
-        XFlush(dc.x.display);
-        return newdc;
     }
 
     /* Empty bar */
