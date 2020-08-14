@@ -94,8 +94,8 @@ static int config_setting_lookup_color(const config_setting_t *setting,
     {
         errno = 0;
         color = strtol(colorstring + 1, &endptr, 16);
-        if (strlen(colorstring) == 7 && colorstring[0] == '#' && errno == 0 &&
-            strlen(endptr) == 0 && color >= 0 && color <= 0xFFFFFF)
+        if ((strlen(colorstring) == 7 && colorstring[0] == '#' && errno == 0 &&
+            strlen(endptr) == 0 && color >= 0 && color <= 0xFFFFFF) || colorstring[0]=='r') //TODO Check rgba colors
         {
             *value = colorstring;
             success_status = CONFIG_TRUE;
