@@ -47,6 +47,7 @@ static GC gc_from_string(X_context x, const char *hexcolorstring)
     Colormap colormap = DefaultColormap(x.display, x.screen_number);
     if (XParseColor(x.display, colormap, hexcolorstring, &color) == 0)
     {
+        XFreeGC(x.display, gc);
         gc = NULL;
     }
     else
@@ -210,6 +211,23 @@ Display_context init(Style conf)
     }
 
     return dc;
+}
+
+/* PUBLIC Cleans the X memory buffers. */
+void display_context_destroy(Display_context dc) {
+    XFreeGC(dc.x.display, dc.color.normal.fg);
+    XFreeGC(dc.x.display, dc.color.normal.bg);
+    XFreeGC(dc.x.display, dc.color.normal.border);
+    XFreeGC(dc.x.display, dc.color.overflow.fg);
+    XFreeGC(dc.x.display, dc.color.overflow.bg);
+    XFreeGC(dc.x.display, dc.color.overflow.border);
+    XFreeGC(dc.x.display, dc.color.alt.fg);
+    XFreeGC(dc.x.display, dc.color.alt.bg);
+    XFreeGC(dc.x.display, dc.color.alt.border);
+    XFreeGC(dc.x.display, dc.color.altoverflow.fg);
+    XFreeGC(dc.x.display, dc.color.altoverflow.bg);
+    XFreeGC(dc.x.display, dc.color.altoverflow.border);
+    XCloseDisplay(dc.x.display);
 }
 
 /* PUBLIC Show a bar filled at value/cap in normal or alternative mode */

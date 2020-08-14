@@ -14,6 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with xob.  If not, see <https://www.gnu.org/licenses/>.
  */
+#define CONFIG_INTERNALS 1
 
 #include "conf.h"
 #include <errno.h>
@@ -196,17 +197,15 @@ static int config_setting_lookup_orientation(const config_setting_t *setting,
     return success_status;
 }
 
-Style parse_style_config(FILE *file, const char *stylename, Style default_style)
+Style parse_style_config(FILE *file, const char *stylename, Style default_style, Style_config config)
 {
-    config_t config;
     config_setting_t *style_config;
     config_setting_t *color_config;
-    config_init(&config);
     Style style = default_style;
 
-    if (config_read(&config, file))
+    if (config_read(config, file))
     {
-        style_config = config_lookup(&config, stylename);
+        style_config = config_lookup(config, stylename);
         if (style_config != NULL)
         {
             config_setting_lookup_int(style_config, "thickness",
@@ -242,8 +241,25 @@ Style parse_style_config(FILE *file, const char *stylename, Style default_style)
     else
     {
         fprintf(stderr, "Error: in configuration, line %d - %s\n",
-                config_error_line(&config), config_error_text(&config));
+                config_error_line(config), config_error_text(config));
     }
 
     return style;
+}
+
+Style_config style_config_init()
+{
+    Style_config c = malloc(sizeof(config_t));
+    config_init(c);
+    return c;
+}
+
+void style_config_destroy(Style_config c)
+{
+    if(c)
+    {
+        config_destroy(c);
+        free(c);
+        c = NULL;
+    }
 }

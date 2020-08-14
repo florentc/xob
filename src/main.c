@@ -164,6 +164,7 @@ int main(int argc, char *argv[])
     }
 
     /* Parsing the config file */
+    Style_config config = style_config_init();
     if (config_file == NULL)
     {
         fprintf(stderr, "Info: could not access any configuration file.\n");
@@ -172,7 +173,7 @@ int main(int argc, char *argv[])
     {
         fprintf(stderr, "Info: reading configuration from %s.\n",
                 real_config_file_path);
-        style = parse_style_config(config_file, style_name, style);
+        style = parse_style_config(config_file, style_name, style, config);
         fclose(config_file);
     }
 
@@ -234,6 +235,10 @@ int main(int argc, char *argv[])
                 break;
             }
         }
+
+        /* Clean the memory */
+        display_context_destroy(display_context);
+        style_config_destroy(config);
     }
     return EXIT_SUCCESS;
 }

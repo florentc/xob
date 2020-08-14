@@ -73,5 +73,6 @@ Display_context init(Style conf);
 Display_context show(Display_context dc, int value, int cap,
                      Overflow_mode overflow_mode, Show_mode show_mode);
 Display_context hide(Display_context dc);
+void display_context_destroy(Display_context dc);
 
 #endif /* __DISPLAY_H__ */
