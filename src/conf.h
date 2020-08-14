@@ -122,7 +122,16 @@ typedef struct
 #define DEFAULT_CONFIG_APPNAME "xob"
 #define DEFAULT_CONFIG_FILENAME "styles.cfg"
 
+#ifndef CONFIG_INTERNALS
+    typedef void * Style_config;
+#else
+    #include <libconfig.h>
+    typedef config_t * Style_config;
+#endif
+
 Style parse_style_config(FILE *filename, const char *stylename,
-                         Style default_style);
+                         Style default_style, Style_config config);
+Style_config style_config_init();
+void style_config_destroy(Style_config config);
 
 #endif /* __CONF_H__ */
