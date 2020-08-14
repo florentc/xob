@@ -19,6 +19,8 @@
 
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
+#include <stdlib.h>
+#include <string.h>
 
 /* Keep value in range */
 static int fit_in(int value, int min, int max)
@@ -38,30 +40,71 @@ static int size_y(Geometry_context g)
     return g.orientation == HORIZONTAL ? g.thickness : g.length;
 }
 
-/* Get Color from a hex color specification string */
+/* Get Color from a hex color specification string.
+ * Only #RRGGBB[AA] values are allowed for simplicity, otherwise
+ * a default color will be used */
 static Color color_from_string(X_context x, const char *hexcolorstring)
 {
-    const char default_color[] = "#ff0055";
-  #ifndef ALPHA
-    XColor color;
-    Color gc = XCreateGC(x.display, x.window, 0, NULL);
-    Colormap colormap = DefaultColormap(x.display, x.screen_number);
-    if (XParseColor(x.display, colormap, hexcolorstring, &color) == 0)
-    {
-        XParseColor(x.display, colormap, (const char *) &default_color, &color);
+    #ifdef ALPHA
+        (void) x; // Supress unused parameter warning
+    #endif
+    const unsigned char default_color[] = {0xff,0x00,0x55,0xff};
+    Color color;
+    char* cur = (char*) hexcolorstring;
+
+    const unsigned char n = strlen (cur);
+    unsigned char* rgba = calloc(4, sizeof(unsigned char));
+    if(*cur == '#' && (n == 6+1 || n == 8+1)){
+        cur++;
+        for(int i=0; i<4; i++)
+        {
+            if(i == 3 && *cur == 0)
+            {
+                rgba[3] = 255;
+                break;
+            }
+            for(int j=0; j<2; j++) {
+                rgba[i] <<=4;
+                if (*cur >= '0' && *cur <= '9')
+                    rgba[i] |= *cur - '0';
+                else if (*cur >= 'A' && *cur <= 'F')
+                    rgba[i] |= *cur - ('A' - 10);
+                else if (*cur >= 'a' && *cur <= 'f')
+                    rgba[i] |= *cur - ('a' - 10);
+                else
+                {
+                    cur = NULL;
+                    break;
+                }
+                cur++;
+            }
+            if(cur == NULL)
+            {
+                strncpy((char*)rgba, (char*)default_color, 4);
+                break;
+            }
+        }
     }
-    XAllocColor(x.display, colormap, &color);
-    XSetForeground(x.display, gc, color.pixel);
-    return gc;
-  #else
-    Color color = (Color) malloc(sizeof(XRenderColor));
-    //TODO Better Parser
-    if (XRenderParseColor(x.display, (char *) hexcolorstring, color) == 0)
-    {
-	    XRenderParseColor(x.display, (char *) &default_color, color);
-    }
+    #ifndef ALPHA
+        XColor xcolor = {
+            .red = rgba[0]*257,
+            .green = rgba[1]*257,
+            .blue = rgba[2]*257,
+            .flags = DoRed | DoGreen | DoBlue,
+        };
+        color = XCreateGC(x.display, x.window, 0, NULL);
+        Colormap colormap = DefaultColormap(x.display, x.screen_number);
+        XAllocColor(x.display, colormap, &xcolor);
+        XSetForeground(x.display, color, xcolor.pixel);
+    #else
+        color = malloc(sizeof(XRenderColor));
+        color->alpha =  rgba[3]*257;
+        color->red   = (rgba[0]*257 * color->alpha) / 0xffffU;
+        color->green = (rgba[1]*257 * color->alpha) / 0xffffU;
+        color->blue  = (rgba[2]*257 * color->alpha) / 0xffffU;
+    #endif
+    free(rgba);
     return color;
-  #endif
 }
 
 /* Draw a rectangle with the given size, position and color */
