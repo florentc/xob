@@ -37,7 +37,7 @@ int main(int argc, char *argv[])
 
     /* Command-line arguments */
     char opt;
-    while ((opt = getopt(argc, argv, "m:t:c:s:vh")) != -1)
+    while ((opt = getopt(argc, argv, "m:t:c:s:qvh")) != -1)
     {
         switch (opt)
         {
@@ -76,6 +76,9 @@ int main(int argc, char *argv[])
         case 's':
             style_name = optarg;
             break;
+        case 'q':
+            freopen("/dev/null", "a+", stdout);
+            break;
         case 'v':
             printf("Version %s\n", VERSION_NUMBER);
             exit(EXIT_SUCCESS);
@@ -96,6 +99,8 @@ int main(int argc, char *argv[])
                             " configuration file specifying styles\n");
             fprintf(stderr, "    -s <style name>      "
                             " style to use from the configuration file\n");
+            fprintf(stderr, "    -q                   "
+                            " suppress all normal output\n");
             fprintf(stderr, "    -v                   "
                             " display version number\n");
             exit(EXIT_FAILURE);
@@ -170,7 +175,7 @@ int main(int argc, char *argv[])
     }
     else
     {
-        fprintf(stderr, "Info: reading configuration from %s.\n",
+        printf("Info: reading configuration from %s.\n",
                 real_config_file_path);
         style = parse_style_config(config_file, style_name, style);
         fclose(config_file);
