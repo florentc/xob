@@ -93,7 +93,13 @@ static Color color_from_string(X_context x, const char *hexcolorstring)
     {
         return NULL;
     }
-#ifndef ALPHA
+#ifdef ALPHA
+    color = malloc(sizeof(XRenderColor));
+    color->alpha = rgba[3] * 257;
+    color->red = (rgba[0] * 257 * color->alpha) / 0xffffU;
+    color->green = (rgba[1] * 257 * color->alpha) / 0xffffU;
+    color->blue = (rgba[2] * 257 * color->alpha) / 0xffffU;
+#else
     XColor xcolor = {
         .red = rgba[0] * 257,
         .green = rgba[1] * 257,
@@ -104,12 +110,6 @@ static Color color_from_string(X_context x, const char *hexcolorstring)
     Colormap colormap = DefaultColormap(x.display, x.screen_number);
     XAllocColor(x.display, colormap, &xcolor);
     XSetForeground(x.display, color, xcolor.pixel);
-#else
-    color = malloc(sizeof(XRenderColor));
-    color->alpha = rgba[3] * 257;
-    color->red = (rgba[0] * 257 * color->alpha) / 0xffffU;
-    color->green = (rgba[1] * 257 * color->alpha) / 0xffffU;
-    color->blue = (rgba[2] * 257 * color->alpha) / 0xffffU;
 #endif
     return color;
 }
@@ -118,15 +118,15 @@ static Color color_from_string(X_context x, const char *hexcolorstring)
 static void fill_rectangle(Display *display, Window dest, Color c, int x, int y,
                            unsigned int w, unsigned int h)
 {
-#ifndef ALPHA
-    XFillRectangle(display, dest, c, x, y, w, h);
-#else
+#ifdef ALPHA
     XWindowAttributes attrib;
     XGetWindowAttributes(display, dest, &attrib);
     XRenderPictFormat *pfmt = XRenderFindVisualFormat(display, attrib.visual);
 
     Picture pict = XRenderCreatePicture(display, dest, pfmt, 0, 0);
     XRenderFillRectangle(display, PictOpSrc, pict, c, x, y, w, h);
+#else
+    XFillRectangle(display, dest, c, x, y, w, h);
 #endif
 }
 
