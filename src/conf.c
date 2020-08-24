@@ -93,7 +93,7 @@ static int config_setting_lookup_color(const config_setting_t *setting,
     if (config_setting_lookup_string(setting, name, &colorstring))
     {
         errno = 0;
-        color = (unsigned int) strtol(colorstring + 1, &endptr, 16);
+        color = (unsigned int)strtol(colorstring + 1, &endptr, 16);
         char cslen = strlen(colorstring);
         if (cslen >= 7 && cslen <= 9 && colorstring[0] == '#' && errno == 0 &&
             strlen(endptr) == 0 && color <= 0xFFFFFFFF)
@@ -198,30 +198,31 @@ static int config_setting_lookup_orientation(const config_setting_t *setting,
     return success_status;
 }
 
-Style parse_style_config(FILE *file, const char *stylename, Style default_style, Style_config config)
+Style parse_style_config(FILE *file, const char *stylename, Style default_style,
+                         Xob_config config)
 {
-    config_setting_t *style_config;
+    config_setting_t *xob_config;
     config_setting_t *color_config;
     Style style = default_style;
 
     if (config_read(config, file))
     {
-        style_config = config_lookup(config, stylename);
-        if (style_config != NULL)
+        xob_config = config_lookup(config, stylename);
+        if (xob_config != NULL)
         {
-            config_setting_lookup_int(style_config, "thickness",
+            config_setting_lookup_int(xob_config, "thickness",
                                       &style.thickness);
-            config_setting_lookup_int(style_config, "border", &style.border);
-            config_setting_lookup_int(style_config, "padding", &style.padding);
-            config_setting_lookup_int(style_config, "outline", &style.outline);
-            config_setting_lookup_dim(style_config, "x", &style.x);
-            config_setting_lookup_dim(style_config, "y", &style.y);
-            config_setting_lookup_dim(style_config, "length", &style.length);
-            config_setting_lookup_orientation(style_config, "orientation",
+            config_setting_lookup_int(xob_config, "border", &style.border);
+            config_setting_lookup_int(xob_config, "padding", &style.padding);
+            config_setting_lookup_int(xob_config, "outline", &style.outline);
+            config_setting_lookup_dim(xob_config, "x", &style.x);
+            config_setting_lookup_dim(xob_config, "y", &style.y);
+            config_setting_lookup_dim(xob_config, "length", &style.length);
+            config_setting_lookup_orientation(xob_config, "orientation",
                                               &style.orientation);
-            config_setting_lookup_overflowmode(style_config, "overflow",
+            config_setting_lookup_overflowmode(xob_config, "overflow",
                                                &style.overflow);
-            color_config = config_setting_get_member(style_config, "color");
+            color_config = config_setting_get_member(xob_config, "color");
             if (color_config != NULL)
             {
                 config_setting_lookup_colorspec(color_config, "normal",
@@ -248,16 +249,16 @@ Style parse_style_config(FILE *file, const char *stylename, Style default_style,
     return style;
 }
 
-Style_config style_config_init()
+Xob_config xob_config_init()
 {
-    Style_config c = malloc(sizeof(config_t));
+    Xob_config c = malloc(sizeof(config_t));
     config_init(c);
     return c;
 }
 
-void style_config_destroy(Style_config c)
+void xob_config_destroy(Xob_config c)
 {
-    if(c)
+    if (c)
     {
         config_destroy(c);
         free(c);

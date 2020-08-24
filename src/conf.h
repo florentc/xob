@@ -123,15 +123,15 @@ typedef struct
 #define DEFAULT_CONFIG_FILENAME "styles.cfg"
 
 #ifndef CONFIG_INTERNALS
-    typedef void * Style_config;
+typedef void *Xob_config;
 #else
-    #include <libconfig.h>
-    typedef config_t * Style_config;
+#include <libconfig.h>
+typedef config_t *Xob_config;
 #endif
 
 Style parse_style_config(FILE *filename, const char *stylename,
-                         Style default_style, Style_config config);
-Style_config style_config_init();
-void style_config_destroy(Style_config config);
+                         Style default_style, Xob_config config);
+Xob_config xob_config_init();
+void xob_config_destroy(Xob_config config);
 
 #endif /* __CONF_H__ */
