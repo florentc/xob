@@ -40,18 +40,12 @@ static int size_y(Geometry_context g)
     return g.orientation == HORIZONTAL ? g.thickness : g.length;
 }
 
-/* Get Color from a hex color specification string.
- * Only #RRGGBB[AA] values are allowed for simplicity, otherwise
- * a default color will be used */
-static Color color_from_string(X_context x, const char *hexcolorstring)
+unsigned char *parse_hex(const char *hex)
 {
-    (void)x; // Supress unused parameter warning
-    const unsigned char default_color[] = {0xff, 0x00, 0x55, 0xff};
-    Color color;
-    char *cur = (char *)hexcolorstring;
+    char *cur = (char *)hex;
 
     const unsigned char n = strlen(cur);
-    unsigned char *rgba = calloc(4, sizeof(unsigned char));
+    static unsigned char rgba[4];
     if (*cur == '#' && (n == 6 + 1 || n == 8 + 1))
     {
         cur++;
@@ -80,10 +74,24 @@ static Color color_from_string(X_context x, const char *hexcolorstring)
             }
             if (cur == NULL)
             {
-                strncpy((char *)rgba, (char *)default_color, 4);
-                break;
+                return NULL;
             }
         }
+    }
+    return rgba;
+}
+
+/* Get Color from a hex color specification string.
+ * Only #RRGGBB[AA] values are allowed for simplicity, otherwise
+ * a default color will be used */
+static Color color_from_string(X_context x, const char *hexcolorstring)
+{
+    (void)x; // Supress unused parameter warning
+    Color color;
+    unsigned char *rgba = parse_hex(hexcolorstring);
+    if (!rgba)
+    {
+        return NULL;
     }
 #ifndef ALPHA
     XColor xcolor = {
@@ -103,7 +111,6 @@ static Color color_from_string(X_context x, const char *hexcolorstring)
     color->green = (rgba[1] * 257 * color->alpha) / 0xffffU;
     color->blue = (rgba[2] * 257 * color->alpha) / 0xffffU;
 #endif
-    free(rgba);
     return color;
 }
 
@@ -179,18 +186,155 @@ static void draw_separator(X_context x, Geometry_context g, int position,
     }
 }
 
+#ifdef ALPHA
+_Bool is_alpha_visual(Display_context dc, Visual *visual)
+{
+    XRenderPictFormat *fmt = XRenderFindVisualFormat(dc.x.display, visual);
+    if (fmt->type == PictTypeDirect && fmt->direct.alphaMask)
+    {
+        return True;
+    }
+    return False;
+}
+
+Depth get_alpha_depth_if_available(Display_context dc)
+{
+    Depth depth;
+    depth.nvisuals = 0;
+
+    int depths_list_num;
+    int *depths_list =
+        XListDepths(dc.x.display, dc.x.screen_number, &depths_list_num);
+
+    for (int i = depths_list_num - 1; i != 0; i--)
+    {
+        if (depths_list[i] == 32)
+        {
+            int visuals_count;
+            XVisualInfo *visuals_available;
+
+            static long visual_template_mask =
+                VisualScreenMask | VisualDepthMask | VisualClassMask;
+            XVisualInfo visual_template = {
+                .screen = dc.x.screen_number, .depth = 32, .class = TrueColor};
+
+            visuals_available =
+                XGetVisualInfo(dc.x.display, visual_template_mask,
+                               &visual_template, &visuals_count);
+
+            for (int i = 0; i < visuals_count; i++)
+            {
+                if (is_alpha_visual(dc, visuals_available[i].visual))
+                {
+                    depth.visuals = visuals_available[i].visual;
+                    depth.nvisuals = 1;
+                    depth.depth = 32;
+                    break;
+                }
+            }
+            XFree(visuals_available);
+            break;
+        }
+    }
+    XFree(depths_list);
+    return depth;
+}
+#endif
+
+Depth get_default_display_context_depth(Display_context dc)
+{
+    Depth dc_depth = {.depth = DefaultDepth(dc.x.display, dc.x.screen_number),
+                      .visuals =
+                          DefaultVisual(dc.x.display, dc.x.screen_number),
+                      .nvisuals = 1};
+    return dc_depth;
+}
+
+Depth get_display_context_depth(Display_context dc)
+{
+    Depth depth;
+#ifdef ALPHA
+    depth = get_alpha_depth_if_available(dc);
+    if (depth.nvisuals == 1)
+    {
+        return depth;
+    }
+#endif
+    depth = get_default_display_context_depth(dc);
+    return depth;
+}
+
+void compute_geometry(Style conf, Display_context *dc, int *topleft_x,
+                      int *topleft_y, int *fat_layer, int *available_length)
+{
+    dc->geometry.outline = conf.outline;
+    dc->geometry.border = conf.border;
+    dc->geometry.padding = conf.padding;
+    dc->geometry.thickness = conf.thickness;
+    dc->geometry.orientation = conf.orientation;
+    *fat_layer =
+        dc->geometry.padding + dc->geometry.border + dc->geometry.outline;
+
+    /* Orientation-related dimensions */
+    *available_length = dc->geometry.orientation == HORIZONTAL
+                            ? WidthOfScreen(dc->x.screen)
+                            : HeightOfScreen(dc->x.screen);
+
+    dc->geometry.length =
+        fit_in(*available_length * conf.length.rel + conf.length.abs, 0,
+               *available_length - 2 * *fat_layer);
+
+    /* Compute position of the top-left corner */
+    *topleft_x = fit_in(WidthOfScreen(dc->x.screen) * conf.x.rel -
+                            (size_x(dc->geometry) + 2 * *fat_layer) / 2,
+                        0,
+                        WidthOfScreen(dc->x.screen) -
+                            (size_x(dc->geometry) + 2 * *fat_layer)) +
+                 conf.x.abs;
+    *topleft_y = fit_in(HeightOfScreen(dc->x.screen) * conf.y.rel -
+                            (size_y(dc->geometry) + 2 * *fat_layer) / 2,
+                        0,
+                        HeightOfScreen(dc->x.screen) -
+                            (size_y(dc->geometry) + 2 * *fat_layer)) +
+                 conf.y.abs;
+}
+
+void set_color_context_from_config(Display_context *dc, Style conf)
+{
+    dc->color.normal.fg = color_from_string(dc->x, conf.color.normal.fg);
+    dc->color.normal.bg = color_from_string(dc->x, conf.color.normal.bg);
+    dc->color.normal.border =
+        color_from_string(dc->x, conf.color.normal.border);
+    dc->color.overflow.fg = color_from_string(dc->x, conf.color.overflow.fg);
+    dc->color.overflow.bg = color_from_string(dc->x, conf.color.overflow.bg);
+    dc->color.overflow.border =
+        color_from_string(dc->x, conf.color.overflow.border);
+    dc->color.alt.fg = color_from_string(dc->x, conf.color.alt.fg);
+    dc->color.alt.bg = color_from_string(dc->x, conf.color.alt.bg);
+    dc->color.alt.border = color_from_string(dc->x, conf.color.alt.border);
+    dc->color.altoverflow.fg =
+        color_from_string(dc->x, conf.color.altoverflow.fg);
+    dc->color.altoverflow.bg =
+        color_from_string(dc->x, conf.color.altoverflow.bg);
+    dc->color.altoverflow.border =
+        color_from_string(dc->x, conf.color.altoverflow.border);
+}
+
 /* PUBLIC Returns a new display context from a given configuration. If the
  * .x.display field of the returned display context is NULL, display could not
  * have been opened.*/
 Display_context init(Style conf)
 {
     Display_context dc;
+    Depth dc_depth;
     Window root;
-    XSetWindowAttributes window_attributes;
     int topleft_x;
     int topleft_y;
     int fat_layer;
     int available_length;
+    XSetWindowAttributes window_attributes;
+    static long window_attributes_flags =
+        CWColormap | CWBorderPixel | CWOverrideRedirect;
 
     dc.x.display = XOpenDisplay(NULL);
     if (dc.x.display != NULL)
@@ -199,98 +343,22 @@ Display_context init(Style conf)
         dc.x.screen = ScreenOfDisplay(dc.x.display, dc.x.screen_number);
         root = RootWindow(dc.x.display, dc.x.screen_number);
 
-        /* Override the window manager */
-        window_attributes.override_redirect = True;
-
-        /* Compute geometry */
-        dc.geometry.outline = conf.outline;
-        dc.geometry.border = conf.border;
-        dc.geometry.padding = conf.padding;
-        dc.geometry.thickness = conf.thickness;
-        dc.geometry.orientation = conf.orientation;
-        fat_layer =
-            dc.geometry.padding + dc.geometry.border + dc.geometry.outline;
-
-        /* Orientation-related dimensions */
-        available_length = dc.geometry.orientation == HORIZONTAL
-                               ? WidthOfScreen(dc.x.screen)
-                               : HeightOfScreen(dc.x.screen);
-
-        dc.geometry.length =
-            fit_in(available_length * conf.length.rel + conf.length.abs, 0,
-                   available_length - 2 * fat_layer);
-
-        /* Compute position of the top-left corner */
-        topleft_x = fit_in(WidthOfScreen(dc.x.screen) * conf.x.rel -
-                               (size_x(dc.geometry) + 2 * fat_layer) / 2,
-                           0,
-                           WidthOfScreen(dc.x.screen) -
-                               (size_x(dc.geometry) + 2 * fat_layer)) +
-                    conf.x.abs;
-        topleft_y = fit_in(HeightOfScreen(dc.x.screen) * conf.y.rel -
-                               (size_y(dc.geometry) + 2 * fat_layer) / 2,
-                           0,
-                           HeightOfScreen(dc.x.screen) -
-                               (size_y(dc.geometry) + 2 * fat_layer)) +
-                    conf.y.abs;
-
-        int window_depth;
-        Visual *window_visual;
-        /* Search for a 32bit alpha compatible Visual */
-        {
-            /* Set Defaults */
-            window_depth = DefaultDepth(dc.x.display, dc.x.screen_number);
-            window_visual = DefaultVisual(dc.x.display, dc.x.screen_number);
-#ifdef ALPHA
-            /* Check if Screen is 32bit compatible */
-            int count_return;
-            int *depths =
-                XListDepths(dc.x.display, dc.x.screen_number, &count_return);
-
-            for (; count_return > 0; count_return--)
-            {
-                if (depths[count_return - 1] == 32)
-                {
-                    /* Get the 32bit Visual if it exists and finally set bit
-                     * depth to 32*/
-                    int visuals_count;
-                    XVisualInfo visual_template = {.screen = dc.x.screen_number,
-                                                   .depth = 32,
-                                                   .class = TrueColor};
-                    XVisualInfo *visuals_available = XGetVisualInfo(
-                        dc.x.display,
-                        VisualScreenMask | VisualDepthMask | VisualClassMask,
-                        &visual_template, &visuals_count);
-                    for (int i = 0; i < visuals_count; i++)
-                    {
-                        XRenderPictFormat *fmt = XRenderFindVisualFormat(
-                            dc.x.display, visuals_available[i].visual);
-                        if (fmt->type == PictTypeDirect &&
-                            fmt->direct.alphaMask)
-                        {
-                            window_visual = visuals_available[i].visual;
-                            window_depth = 32;
-                            break;
-                        }
-                    }
-                    XFree(visuals_available);
-                    break;
-                }
-            }
-            XFree(depths);
-#endif /* ALPHA */
-        }
+        dc_depth = get_display_context_depth(dc);
 
         window_attributes.colormap =
-            XCreateColormap(dc.x.display, root, window_visual, AllocNone);
+            XCreateColormap(dc.x.display, root, dc_depth.visuals, AllocNone);
         window_attributes.border_pixel = 0;
+        window_attributes.override_redirect = True;
+
+        compute_geometry(conf, &dc, &topleft_x, &topleft_y, &fat_layer,
+                         &available_length);
+
         /* Creation of the window */
         dc.x.window = XCreateWindow(
             dc.x.display, root, topleft_x, topleft_y,
             size_x(dc.geometry) + 2 * fat_layer,
-            size_y(dc.geometry) + 2 * fat_layer, 0, window_depth, InputOutput,
-            window_visual, CWOverrideRedirect | CWColormap | CWBorderPixel,
-            &window_attributes);
+            size_y(dc.geometry) + 2 * fat_layer, 0, dc_depth.depth, InputOutput,
+            dc_depth.visuals, window_attributes_flags, &window_attributes);
 
         /* Set a WM_CLASS for the window */
         XClassHint *class_hint = XAllocClassHint();
@@ -306,23 +374,7 @@ Display_context init(Style conf)
         dc.x.mapped = False;
 
         /* Color context */
-        dc.color.normal.fg = color_from_string(dc.x, conf.color.normal.fg);
-        dc.color.normal.bg = color_from_string(dc.x, conf.color.normal.bg);
-        dc.color.normal.border =
-            color_from_string(dc.x, conf.color.normal.border);
-        dc.color.overflow.fg = color_from_string(dc.x, conf.color.overflow.fg);
-        dc.color.overflow.bg = color_from_string(dc.x, conf.color.overflow.bg);
-        dc.color.overflow.border =
-            color_from_string(dc.x, conf.color.overflow.border);
-        dc.color.alt.fg = color_from_string(dc.x, conf.color.alt.fg);
-        dc.color.alt.bg = color_from_string(dc.x, conf.color.alt.bg);
-        dc.color.alt.border = color_from_string(dc.x, conf.color.alt.border);
-        dc.color.altoverflow.fg =
-            color_from_string(dc.x, conf.color.altoverflow.fg);
-        dc.color.altoverflow.bg =
-            color_from_string(dc.x, conf.color.altoverflow.bg);
-        dc.color.altoverflow.border =
-            color_from_string(dc.x, conf.color.altoverflow.border);
+        set_color_context_from_config(&dc, conf);
     }
 
     return dc;
