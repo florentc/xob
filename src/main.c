@@ -77,7 +77,7 @@ int main(int argc, char *argv[])
             style_name = optarg;
             break;
         case 'q':
-            freopen("/dev/null", "a+", stdout);
+            freopen("/dev/null", "w", stdout);
             break;
         case 'v':
             printf("Version %s\n", VERSION_NUMBER);
