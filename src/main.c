@@ -169,7 +169,7 @@ int main(int argc, char *argv[])
     }
 
     /* Parsing the config file */
-    Style_config config = style_config_init();
+    Xob_config config = xob_config_init();
     if (config_file == NULL)
     {
         fprintf(stderr, "Info: could not access any configuration file.\n");
@@ -243,7 +243,7 @@ int main(int argc, char *argv[])
 
         /* Clean the memory */
         display_context_destroy(display_context);
-        style_config_destroy(config);
+        xob_config_destroy(config);
     }
     return EXIT_SUCCESS;
 }

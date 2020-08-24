@@ -23,13 +23,13 @@
 #include <X11/Xlib.h>
 
 #ifndef ALPHA
-	typedef GC Color;
-	#define color_destroy(a, b) XFreeGC((a), (b))
+typedef GC Color;
+#define color_destroy(a, b) XFreeGC((a), (b))
 #else
-    #include <stdlib.h>
-	#include <X11/extensions/Xrender.h>
-	typedef XRenderColor* Color;
-	#define color_destroy(a, b) (free( (b) ))
+#include <X11/extensions/Xrender.h>
+#include <stdlib.h>
+typedef XRenderColor *Color;
+#define color_destroy(a, b) (free((b)))
 #endif
 
 typedef enum

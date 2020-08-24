@@ -45,26 +45,26 @@ static int size_y(Geometry_context g)
  * a default color will be used */
 static Color color_from_string(X_context x, const char *hexcolorstring)
 {
-    #ifdef ALPHA
-        (void) x; // Supress unused parameter warning
-    #endif
-    const unsigned char default_color[] = {0xff,0x00,0x55,0xff};
+    (void)x; // Supress unused parameter warning
+    const unsigned char default_color[] = {0xff, 0x00, 0x55, 0xff};
     Color color;
-    char* cur = (char*) hexcolorstring;
+    char *cur = (char *)hexcolorstring;
 
-    const unsigned char n = strlen (cur);
-    unsigned char* rgba = calloc(4, sizeof(unsigned char));
-    if(*cur == '#' && (n == 6+1 || n == 8+1)){
+    const unsigned char n = strlen(cur);
+    unsigned char *rgba = calloc(4, sizeof(unsigned char));
+    if (*cur == '#' && (n == 6 + 1 || n == 8 + 1))
+    {
         cur++;
-        for(int i=0; i<4; i++)
+        for (int i = 0; i < 4; i++)
         {
-            if(i == 3 && *cur == 0)
+            if (i == 3 && *cur == 0)
             {
                 rgba[3] = 255;
                 break;
             }
-            for(int j=0; j<2; j++) {
-                rgba[i] <<=4;
+            for (int j = 0; j < 2; j++)
+            {
+                rgba[i] <<= 4;
                 if (*cur >= '0' && *cur <= '9')
                     rgba[i] |= *cur - '0';
                 else if (*cur >= 'A' && *cur <= 'F')
@@ -78,48 +78,49 @@ static Color color_from_string(X_context x, const char *hexcolorstring)
                 }
                 cur++;
             }
-            if(cur == NULL)
+            if (cur == NULL)
             {
-                strncpy((char*)rgba, (char*)default_color, 4);
+                strncpy((char *)rgba, (char *)default_color, 4);
                 break;
             }
         }
     }
-    #ifndef ALPHA
-        XColor xcolor = {
-            .red = rgba[0]*257,
-            .green = rgba[1]*257,
-            .blue = rgba[2]*257,
-            .flags = DoRed | DoGreen | DoBlue,
-        };
-        color = XCreateGC(x.display, x.window, 0, NULL);
-        Colormap colormap = DefaultColormap(x.display, x.screen_number);
-        XAllocColor(x.display, colormap, &xcolor);
-        XSetForeground(x.display, color, xcolor.pixel);
-    #else
-        color = malloc(sizeof(XRenderColor));
-        color->alpha =  rgba[3]*257;
-        color->red   = (rgba[0]*257 * color->alpha) / 0xffffU;
-        color->green = (rgba[1]*257 * color->alpha) / 0xffffU;
-        color->blue  = (rgba[2]*257 * color->alpha) / 0xffffU;
-    #endif
+#ifndef ALPHA
+    XColor xcolor = {
+        .red = rgba[0] * 257,
+        .green = rgba[1] * 257,
+        .blue = rgba[2] * 257,
+        .flags = DoRed | DoGreen | DoBlue,
+    };
+    color = XCreateGC(x.display, x.window, 0, NULL);
+    Colormap colormap = DefaultColormap(x.display, x.screen_number);
+    XAllocColor(x.display, colormap, &xcolor);
+    XSetForeground(x.display, color, xcolor.pixel);
+#else
+    color = malloc(sizeof(XRenderColor));
+    color->alpha = rgba[3] * 257;
+    color->red = (rgba[0] * 257 * color->alpha) / 0xffffU;
+    color->green = (rgba[1] * 257 * color->alpha) / 0xffffU;
+    color->blue = (rgba[2] * 257 * color->alpha) / 0xffffU;
+#endif
     free(rgba);
     return color;
 }
 
 /* Draw a rectangle with the given size, position and color */
-static void fill_rectangle(Display *display, Window dest, Color c, int x, int y, unsigned int w, unsigned int h)
+static void fill_rectangle(Display *display, Window dest, Color c, int x, int y,
+                           unsigned int w, unsigned int h)
 {
-	#ifndef ALPHA
-		XFillRectangle(display, dest, c, x, y, w, h);
-	#else
-        XWindowAttributes attrib;
-        XGetWindowAttributes(display, dest, &attrib);
-        XRenderPictFormat *pfmt = XRenderFindVisualFormat(display, attrib.visual);
+#ifndef ALPHA
+    XFillRectangle(display, dest, c, x, y, w, h);
+#else
+    XWindowAttributes attrib;
+    XGetWindowAttributes(display, dest, &attrib);
+    XRenderPictFormat *pfmt = XRenderFindVisualFormat(display, attrib.visual);
 
-		Picture pict = XRenderCreatePicture(display, dest, pfmt, 0, 0);
-		XRenderFillRectangle (display, PictOpSrc, pict, c, x, y, w, h);
-	#endif
+    Picture pict = XRenderCreatePicture(display, dest, pfmt, 0, 0);
+    XRenderFillRectangle(display, PictOpSrc, pict, c, x, y, w, h);
+#endif
 }
 
 /* Draw an empty bar with the given border color */
@@ -232,36 +233,41 @@ Display_context init(Style conf)
                            HeightOfScreen(dc.x.screen) -
                                (size_y(dc.geometry) + 2 * fat_layer)) +
                     conf.y.abs;
-        
+
         int window_depth;
-        Visual* window_visual;
+        Visual *window_visual;
         /* Search for a 32bit alpha compatible Visual */
         {
             /* Set Defaults */
             window_depth = DefaultDepth(dc.x.display, dc.x.screen_number);
             window_visual = DefaultVisual(dc.x.display, dc.x.screen_number);
-            #ifdef ALPHA
+#ifdef ALPHA
             /* Check if Screen is 32bit compatible */
             int count_return;
-            int * depths = XListDepths(dc.x.display, dc.x.screen_number, &count_return); 
-            
-            for(;count_return>0;count_return--)
+            int *depths =
+                XListDepths(dc.x.display, dc.x.screen_number, &count_return);
+
+            for (; count_return > 0; count_return--)
             {
-                if(depths[count_return-1]==32)
+                if (depths[count_return - 1] == 32)
                 {
-                    /* Get the 32bit Visual if it exists and finally set bit depth to 32*/
+                    /* Get the 32bit Visual if it exists and finally set bit
+                     * depth to 32*/
                     int visuals_count;
-                    XVisualInfo visual_template = {
-                        .screen = dc.x.screen_number,
-                        .depth = 32,
-                        .class = TrueColor
-                    };
-                    XVisualInfo* visuals_available = XGetVisualInfo(dc.x.display,
+                    XVisualInfo visual_template = {.screen = dc.x.screen_number,
+                                                   .depth = 32,
+                                                   .class = TrueColor};
+                    XVisualInfo *visuals_available = XGetVisualInfo(
+                        dc.x.display,
                         VisualScreenMask | VisualDepthMask | VisualClassMask,
                         &visual_template, &visuals_count);
-                    for (int i = 0; i < visuals_count; i++) {
-                        XRenderPictFormat *fmt = XRenderFindVisualFormat(dc.x.display, visuals_available[i].visual);
-                        if (fmt->type == PictTypeDirect && fmt->direct.alphaMask) {
+                    for (int i = 0; i < visuals_count; i++)
+                    {
+                        XRenderPictFormat *fmt = XRenderFindVisualFormat(
+                            dc.x.display, visuals_available[i].visual);
+                        if (fmt->type == PictTypeDirect &&
+                            fmt->direct.alphaMask)
+                        {
                             window_visual = visuals_available[i].visual;
                             window_depth = 32;
                             break;
@@ -272,17 +278,17 @@ Display_context init(Style conf)
                 }
             }
             XFree(depths);
-            #endif /* ALPHA */
+#endif /* ALPHA */
         }
 
-        window_attributes.colormap = XCreateColormap(dc.x.display, root, window_visual, AllocNone);
+        window_attributes.colormap =
+            XCreateColormap(dc.x.display, root, window_visual, AllocNone);
         window_attributes.border_pixel = 0;
         /* Creation of the window */
         dc.x.window = XCreateWindow(
             dc.x.display, root, topleft_x, topleft_y,
             size_x(dc.geometry) + 2 * fat_layer,
-            size_y(dc.geometry) + 2 * fat_layer, 0,
-            window_depth, InputOutput,
+            size_y(dc.geometry) + 2 * fat_layer, 0, window_depth, InputOutput,
             window_visual, CWOverrideRedirect | CWColormap | CWBorderPixel,
             &window_attributes);
 
@@ -302,7 +308,8 @@ Display_context init(Style conf)
         /* Color context */
         dc.color.normal.fg = color_from_string(dc.x, conf.color.normal.fg);
         dc.color.normal.bg = color_from_string(dc.x, conf.color.normal.bg);
-        dc.color.normal.border = color_from_string(dc.x, conf.color.normal.border);
+        dc.color.normal.border =
+            color_from_string(dc.x, conf.color.normal.border);
         dc.color.overflow.fg = color_from_string(dc.x, conf.color.overflow.fg);
         dc.color.overflow.bg = color_from_string(dc.x, conf.color.overflow.bg);
         dc.color.overflow.border =
@@ -322,7 +329,8 @@ Display_context init(Style conf)
 }
 
 /* PUBLIC Cleans the X memory buffers. */
-void display_context_destroy(Display_context dc) {
+void display_context_destroy(Display_context dc)
+{
     color_destroy(dc.x.display, dc.color.normal.fg);
     color_destroy(dc.x.display, dc.color.normal.bg);
     color_destroy(dc.x.display, dc.color.normal.border);
