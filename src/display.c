@@ -22,6 +22,111 @@
 #include <stdlib.h>
 #include <string.h>
 
+///////////////////////////////////////////////////////////////////////////////////////////////////
+
+#ifdef ALPHA
+_Bool is_alpha_visual(Display_context dc, Visual *visual)
+{
+    XRenderPictFormat *fmt = XRenderFindVisualFormat(dc.x.display, visual);
+    if (fmt->type == PictTypeDirect && fmt->direct.alphaMask)
+    {
+        return True;
+    }
+    return False;
+}
+
+Depth get_alpha_depth_if_available(Display_context dc)
+{
+    Depth depth;
+    depth.nvisuals = 0;
+
+    int depths_list_num;
+    int *depths_list =
+        XListDepths(dc.x.display, dc.x.screen_number, &depths_list_num);
+
+    for (int i = depths_list_num - 1; i != 0; i--)
+    {
+        if (depths_list[i] == 32)
+        {
+            int visuals_count;
+            XVisualInfo *visuals_available;
+
+            static long visual_template_mask =
+                VisualScreenMask | VisualDepthMask | VisualClassMask;
+            XVisualInfo visual_template = {
+                .screen = dc.x.screen_number, .depth = 32, .class = TrueColor};
+
+            visuals_available =
+                XGetVisualInfo(dc.x.display, visual_template_mask,
+                               &visual_template, &visuals_count);
+
+            for (int i = 0; i < visuals_count; i++)
+            {
+                if (is_alpha_visual(dc, visuals_available[i].visual))
+                {
+                    depth.visuals = visuals_available[i].visual;
+                    depth.nvisuals = 1;
+                    depth.depth = 32;
+                    break;
+                }
+            }
+            XFree(visuals_available);
+            break;
+        }
+    }
+    XFree(depths_list);
+    return depth;
+}
+#endif
+
+/* Draw a rectangle with the given size, position and color */
+static void fill_rectangle(Display *display, Window dest, Color c, int x, int y,
+                           unsigned int w, unsigned int h)
+{
+#ifdef ALPHA
+    XWindowAttributes attrib;
+    XGetWindowAttributes(display, dest, &attrib);
+    XRenderPictFormat *pfmt = XRenderFindVisualFormat(display, attrib.visual);
+
+    Picture pict = XRenderCreatePicture(display, dest, pfmt, 0, 0);
+    XRenderFillRectangle(display, PictOpSrc, pict, c, x, y, w, h);
+#else
+    XFillRectangle(display, dest, c, x, y, w, h);
+#endif
+}
+
+/* Get Color from a hex color specification string.
+ * Only #RRGGBB[AA] values are allowed for simplicity, otherwise
+ * a default color will be used */
+static Color color_from_string(X_context x, unsigned int color_value)
+{
+    Color color;
+    unsigned char *argb = (unsigned char *)&color_value;
+    printf("R%i G%i B%i A%i", argb[1], argb[2], argb[3], argb[0]);
+#ifdef ALPHA
+    (void)x; // Suppress unused parameter warning
+    color = malloc(sizeof(XRenderColor));
+    color->alpha = argb[0] * 257;
+    color->red = (argb[3] * 257 * color->alpha) / 0xffffU;
+    color->green = (argb[2] * 257 * color->alpha) / 0xffffU;
+    color->blue = (argb[1] * 257 * color->alpha) / 0xffffU;
+#else
+    XColor xcolor = {
+        .red = argb[3] * 257,
+        .green = argb[2] * 257,
+        .blue = argb[1] * 257,
+        .flags = DoRed | DoGreen | DoBlue,
+    };
+    color = XCreateGC(x.display, x.window, 0, NULL);
+    Colormap colormap = DefaultColormap(x.display, x.screen_number);
+    XAllocColor(x.display, colormap, &xcolor);
+    XSetForeground(x.display, color, xcolor.pixel);
+#endif
+    return color;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 /* Keep value in range */
 static int fit_in(int value, int min, int max)
 {
@@ -38,96 +143,6 @@ static int size_x(Geometry_context g)
 static int size_y(Geometry_context g)
 {
     return g.orientation == HORIZONTAL ? g.thickness : g.length;
-}
-
-unsigned char *parse_hex(const char *hex)
-{
-    char *cur = (char *)hex;
-
-    const unsigned char n = strlen(cur);
-    static unsigned char rgba[4];
-    if (*cur == '#' && (n == 6 + 1 || n == 8 + 1))
-    {
-        cur++;
-        for (int i = 0; i < 4; i++)
-        {
-            if (i == 3 && *cur == 0)
-            {
-                rgba[3] = 255;
-                break;
-            }
-            for (int j = 0; j < 2; j++)
-            {
-                rgba[i] <<= 4;
-                if (*cur >= '0' && *cur <= '9')
-                    rgba[i] |= *cur - '0';
-                else if (*cur >= 'A' && *cur <= 'F')
-                    rgba[i] |= *cur - ('A' - 10);
-                else if (*cur >= 'a' && *cur <= 'f')
-                    rgba[i] |= *cur - ('a' - 10);
-                else
-                {
-                    cur = NULL;
-                    break;
-                }
-                cur++;
-            }
-            if (cur == NULL)
-            {
-                return NULL;
-            }
-        }
-    }
-    return rgba;
-}
-
-/* Get Color from a hex color specification string.
- * Only #RRGGBB[AA] values are allowed for simplicity, otherwise
- * a default color will be used */
-static Color color_from_string(X_context x, const char *hexcolorstring)
-{
-    (void)x; // Supress unused parameter warning
-    Color color;
-    unsigned char *rgba = parse_hex(hexcolorstring);
-    if (!rgba)
-    {
-        return NULL;
-    }
-#ifdef ALPHA
-    color = malloc(sizeof(XRenderColor));
-    color->alpha = rgba[3] * 257;
-    color->red = (rgba[0] * 257 * color->alpha) / 0xffffU;
-    color->green = (rgba[1] * 257 * color->alpha) / 0xffffU;
-    color->blue = (rgba[2] * 257 * color->alpha) / 0xffffU;
-#else
-    XColor xcolor = {
-        .red = rgba[0] * 257,
-        .green = rgba[1] * 257,
-        .blue = rgba[2] * 257,
-        .flags = DoRed | DoGreen | DoBlue,
-    };
-    color = XCreateGC(x.display, x.window, 0, NULL);
-    Colormap colormap = DefaultColormap(x.display, x.screen_number);
-    XAllocColor(x.display, colormap, &xcolor);
-    XSetForeground(x.display, color, xcolor.pixel);
-#endif
-    return color;
-}
-
-/* Draw a rectangle with the given size, position and color */
-static void fill_rectangle(Display *display, Window dest, Color c, int x, int y,
-                           unsigned int w, unsigned int h)
-{
-#ifdef ALPHA
-    XWindowAttributes attrib;
-    XGetWindowAttributes(display, dest, &attrib);
-    XRenderPictFormat *pfmt = XRenderFindVisualFormat(display, attrib.visual);
-
-    Picture pict = XRenderCreatePicture(display, dest, pfmt, 0, 0);
-    XRenderFillRectangle(display, PictOpSrc, pict, c, x, y, w, h);
-#else
-    XFillRectangle(display, dest, c, x, y, w, h);
-#endif
 }
 
 /* Draw an empty bar with the given border color */
@@ -185,61 +200,6 @@ static void draw_separator(X_context x, Geometry_context g, int position,
             g.thickness, g.padding);
     }
 }
-
-#ifdef ALPHA
-_Bool is_alpha_visual(Display_context dc, Visual *visual)
-{
-    XRenderPictFormat *fmt = XRenderFindVisualFormat(dc.x.display, visual);
-    if (fmt->type == PictTypeDirect && fmt->direct.alphaMask)
-    {
-        return True;
-    }
-    return False;
-}
-
-Depth get_alpha_depth_if_available(Display_context dc)
-{
-    Depth depth;
-    depth.nvisuals = 0;
-
-    int depths_list_num;
-    int *depths_list =
-        XListDepths(dc.x.display, dc.x.screen_number, &depths_list_num);
-
-    for (int i = depths_list_num - 1; i != 0; i--)
-    {
-        if (depths_list[i] == 32)
-        {
-            int visuals_count;
-            XVisualInfo *visuals_available;
-
-            static long visual_template_mask =
-                VisualScreenMask | VisualDepthMask | VisualClassMask;
-            XVisualInfo visual_template = {
-                .screen = dc.x.screen_number, .depth = 32, .class = TrueColor};
-
-            visuals_available =
-                XGetVisualInfo(dc.x.display, visual_template_mask,
-                               &visual_template, &visuals_count);
-
-            for (int i = 0; i < visuals_count; i++)
-            {
-                if (is_alpha_visual(dc, visuals_available[i].visual))
-                {
-                    depth.visuals = visuals_available[i].visual;
-                    depth.nvisuals = 1;
-                    depth.depth = 32;
-                    break;
-                }
-            }
-            XFree(visuals_available);
-            break;
-        }
-    }
-    XFree(depths_list);
-    return depth;
-}
-#endif
 
 Depth get_default_display_context_depth(Display_context dc)
 {

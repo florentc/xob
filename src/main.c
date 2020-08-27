@@ -169,18 +169,10 @@ int main(int argc, char *argv[])
     }
 
     /* Parsing the config file */
-    Xob_config config = xob_config_init();
-    if (config_file == NULL)
-    {
-        fprintf(stderr, "Info: could not access any configuration file.\n");
-    }
-    else
-    {
-        printf("Info: reading configuration from %s.\n",
-                real_config_file_path);
-        style = parse_style_config(config_file, style_name, style, config);
-        fclose(config_file);
-    }
+    printf("Info: reading configuration from %s.\n",
+            real_config_file_path);
+    style = parse_style_config(config_file, style_name, style);
+    fclose(config_file);
 
     /* Display */
     bool displayed = false;
@@ -243,7 +235,6 @@ int main(int argc, char *argv[])
 
         /* Clean the memory */
         display_context_destroy(display_context);
-        xob_config_destroy(config);
     }
     return EXIT_SUCCESS;
 }

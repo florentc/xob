@@ -20,12 +20,17 @@
 
 #include <stdio.h>
 
+/**
+ * The coloring of a bar.
+ *
+ * Colors storage order is 0xRRGGBBAA.
+ */
 typedef struct
 {
-    const char *fg;
-    const char *bg;
-    const char *border;
-} Colorspec;
+    unsigned int fg;
+    unsigned int bg;
+    unsigned int border;
+} Colors;
 
 typedef struct
 {
@@ -58,10 +63,10 @@ typedef struct
     Overflow_mode overflow;
     struct
     {
-        Colorspec normal;
-        Colorspec overflow;
-        Colorspec alt;
-        Colorspec altoverflow;
+        Colors normal;
+        Colors overflow;
+        Colors alt;
+        Colors altoverflow;
     } color;
 } Style;
 
@@ -92,27 +97,27 @@ typedef struct
         {\
             .normal =\
             {\
-                .fg     = "#ffffff",\
-                .bg     = "#000000",\
-                .border = "#ffffff"\
+                .fg     = 0xffffff,\
+                .bg     = 0x000000,\
+                .border = 0xffffff\
             },\
             .overflow =\
             {\
-                .fg     = "#ff0000",\
-                .bg     = "#000000",\
-                .border = "#ff0000"\
+                .fg     = 0xff0000,\
+                .bg     = 0x000000,\
+                .border = 0xff0000\
             },\
             .alt =\
             {\
-                .fg     = "#555555",\
-                .bg     = "#000000",\
-                .border = "#555555"\
+                .fg     = 0x555555,\
+                .bg     = 0x000000,\
+                .border = 0x555555\
             },\
             .altoverflow =\
             {\
-                .fg     = "#550000",\
-                .bg     = "#000000",\
-                .border = "#550000"\
+                .fg     = 0x550000,\
+                .bg     = 0x000000,\
+                .border = 0x550000\
             }\
         }\
     }
@@ -122,16 +127,7 @@ typedef struct
 #define DEFAULT_CONFIG_APPNAME "xob"
 #define DEFAULT_CONFIG_FILENAME "styles.cfg"
 
-#ifndef CONFIG_INTERNALS
-typedef void *Xob_config;
-#else
-#include <libconfig.h>
-typedef config_t *Xob_config;
-#endif
-
 Style parse_style_config(FILE *filename, const char *stylename,
-                         Style default_style, Xob_config config);
-Xob_config xob_config_init();
-void xob_config_destroy(Xob_config config);
+                         Style default_style);
 
 #endif /* __CONF_H__ */

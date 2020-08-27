@@ -23,6 +23,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+typedef config_t *Config;
+
 static int config_setting_lookup_float_or_int(const config_setting_t *setting,
                                               const char *name, double *value)
 {
@@ -82,23 +84,81 @@ static int config_setting_lookup_dim(const config_setting_t *setting,
     return success_status;
 }
 
+static _Bool color_spec_is_valid(const char *spec)
+{
+    if (spec[0] == '#')
+        return 1;
+    return 0;
+}
+
+/*
+unsigned char *parse_hex(const char *hex)
+{
+    char *cur = (char *)hex;
+
+    const unsigned char n = strlen(cur);
+    static unsigned char rgba[4];
+    if (*cur == '#' && (n == 6 + 1 || n == 8 + 1))
+    {
+        cur++;
+        for (int i = 0; i < 4; i++)
+        {
+            if (i == 3 && *cur == 0)
+            {
+                rgba[3] = 255;
+                break;
+            }
+            for (int j = 0; j < 2; j++)
+            {
+                rgba[i] <<= 4;
+                if (*cur >= '0' && *cur <= '9')
+                    rgba[i] |= *cur - '0';
+                else if (*cur >= 'A' && *cur <= 'F')
+                    rgba[i] |= *cur - ('A' - 10);
+                else if (*cur >= 'a' && *cur <= 'f')
+                    rgba[i] |= *cur - ('a' - 10);
+                else
+                {
+                    cur = NULL;
+                    break;
+                }
+                cur++;
+            }
+            if (cur == NULL)
+            {
+                return NULL;
+            }
+        }
+    }
+    return rgba;
+}
+*/
+
+static unsigned int parse_color(const char *spec)
+{
+    char color_hex_chars[8];
+    char *end;
+
+    strncpy((char *) color_hex_chars, spec+1, 8);
+
+    unsigned int color = (unsigned int)strtol((char*)color_hex_chars, &end, 16);
+    if (end - (char*)color_hex_chars <= 2+2+2)
+        color = (color << 8) | 0xff; // 00.XX.XX.XX -> XX.XX.XX.FF
+    return color;
+}
+
 static int config_setting_lookup_color(const config_setting_t *setting,
-                                       const char *name, const char **value)
+                                       const char *name, unsigned int *value)
 {
     const char *colorstring;
-    char *endptr;
-    unsigned int color;
     int success_status = CONFIG_FALSE;
 
     if (config_setting_lookup_string(setting, name, &colorstring))
     {
         errno = 0;
-        color = (unsigned int)strtol(colorstring + 1, &endptr, 16);
-        char cslen = strlen(colorstring);
-        if (cslen >= 7 && cslen <= 9 && colorstring[0] == '#' && errno == 0 &&
-            strlen(endptr) == 0 && color <= 0xFFFFFFFF)
+        if (color_spec_is_valid(colorstring))
         {
-            *value = colorstring;
+            *value = parse_color(colorstring);
             success_status = CONFIG_TRUE;
         }
         else
@@ -113,8 +173,8 @@ static int config_setting_lookup_color(const config_setting_t *setting,
     return success_status;
 }
 
-static int config_setting_lookup_colorspec(const config_setting_t *setting,
-                                           const char *name, Colorspec *value)
+static int config_setting_lookup_colors(const config_setting_t *setting,
+                                           const char *name, Colors *value)
 {
     config_setting_t *colorspec_setting;
     int success_status = CONFIG_FALSE;
@@ -198,9 +258,11 @@ static int config_setting_lookup_orientation(const config_setting_t *setting,
     return success_status;
 }
 
-Style parse_style_config(FILE *file, const char *stylename, Style default_style,
-                         Xob_config config)
+Style parse_style_config(FILE *file, const char *stylename, Style default_style)
 {
+    Config config = malloc(sizeof(config_t));
+    config_init(config);
+
     config_setting_t *xob_config;
     config_setting_t *color_config;
     Style style = default_style;
@@ -225,13 +287,13 @@ Style parse_style_config(FILE *file, const char *stylename, Style default_style,
             color_config = config_setting_get_member(xob_config, "color");
             if (color_config != NULL)
             {
-                config_setting_lookup_colorspec(color_config, "normal",
+                config_setting_lookup_colors(color_config, "normal",
                                                 &style.color.normal);
-                config_setting_lookup_colorspec(color_config, "overflow",
+                config_setting_lookup_colors(color_config, "overflow",
                                                 &style.color.overflow);
-                config_setting_lookup_colorspec(color_config, "alt",
+                config_setting_lookup_colors(color_config, "alt",
                                                 &style.color.alt);
-                config_setting_lookup_colorspec(color_config, "altoverflow",
+                config_setting_lookup_colors(color_config, "altoverflow",
                                                 &style.color.altoverflow);
             }
         }
@@ -246,22 +308,7 @@ Style parse_style_config(FILE *file, const char *stylename, Style default_style,
                 config_error_line(config), config_error_text(config));
     }
 
+    config_destroy(config);
+    free(config);
     return style;
-}
-
-Xob_config xob_config_init()
-{
-    Xob_config c = malloc(sizeof(config_t));
-    config_init(c);
-    return c;
-}
-
-void xob_config_destroy(Xob_config c)
-{
-    if (c)
-    {
-        config_destroy(c);
-        free(c);
-        c = NULL;
-    }
 }
