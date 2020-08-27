@@ -8,7 +8,7 @@ xob - A lightweight overlay volume/backlight/progress/anything bar for the X Win
 
 # SYNOPSIS
 
-**xob** [**-m** *maximum*] [**-t** *timeout*] [**-c** *configfile*] [**-s** *style*]
+**xob** [**-m** *maximum*] [**-t** *timeout*] [**-c** *configfile*] [**-s** *style*] [**-q**]
 
 # DESCRIPTION
 
@@ -27,6 +27,9 @@ xob - A lightweight overlay volume/backlight/progress/anything bar for the X Win
 
 **-c** *configfile*
 :   Specifies a configuration file path. By default: see below.
+
+**-q**
+:   Specifies whether to suppress all normal output. By default: not suppressed
 
 # CONFIGURATION FILE
 
