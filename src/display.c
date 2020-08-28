@@ -22,116 +22,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
-typedef Color (*color_from_config_t)(X_context, RGBA_color);
-
-#ifdef ALPHA
-_Bool is_alpha_visual(Display_context dc, Visual *visual)
-{
-    XRenderPictFormat *fmt = XRenderFindVisualFormat(dc.x.display, visual);
-    if (fmt->type == PictTypeDirect && fmt->direct.alphaMask)
-    {
-        return True;
-    }
-    return False;
-}
-
-Depth get_alpha_depth_if_available(Display_context dc)
-{
-    Depth depth;
-    depth.nvisuals = 0;
-
-    int depths_list_num;
-    int *depths_list =
-        XListDepths(dc.x.display, dc.x.screen_number, &depths_list_num);
-
-    for (int i = depths_list_num - 1; i != 0; i--)
-    {
-        if (depths_list[i] == 32)
-        {
-            int visuals_count;
-            XVisualInfo *visuals_available;
-
-            static long visual_template_mask =
-                VisualScreenMask | VisualDepthMask | VisualClassMask;
-            XVisualInfo visual_template = {
-                .screen = dc.x.screen_number, .depth = 32, .class = TrueColor};
-
-            visuals_available =
-                XGetVisualInfo(dc.x.display, visual_template_mask,
-                               &visual_template, &visuals_count);
-
-            for (int i = 0; i < visuals_count; i++)
-            {
-                if (is_alpha_visual(dc, visuals_available[i].visual))
-                {
-                    depth.visuals = visuals_available[i].visual;
-                    depth.nvisuals = 1;
-                    depth.depth = 32;
-                    break;
-                }
-            }
-            XFree(visuals_available);
-            break;
-        }
-    }
-    XFree(depths_list);
-    return depth;
-}
-
-/* Draw a rectangle with the given size, position and color */
-static void fill_rectangle_xrender(Display *display, Window dest, Color c,
-                                   int x, int y, unsigned int w, unsigned int h)
-{
-    XWindowAttributes attrib;
-    XGetWindowAttributes(display, dest, &attrib);
-    XRenderPictFormat *pfmt = XRenderFindVisualFormat(display, attrib.visual);
-
-    Picture pict = XRenderCreatePicture(display, dest, pfmt, 0, 0);
-    XRenderFillRectangle(display, PictOpSrc, pict, c, x, y, w, h);
-}
-
-Color color_from_config_xrender(X_context x, RGBA_color color)
-{
-    (void)x; // Suppress unused parameter warning
-    Color result;
-    result = malloc(sizeof(XRenderColor));
-    result->alpha = color.alpha * 257;
-    result->red = (color.alpha * 257 * result->alpha) / 0xffffU;
-    result->green = (color.alpha * 257 * result->alpha) / 0xffffU;
-    result->blue = (color.alpha * 257 * result->alpha) / 0xffffU;
-    return result;
-}
-#else
-
-Color color_from_config_xlib(X_context x, RGBA_color color)
-{
-    XColor xcolor = {
-        .red = color.red * 257,
-        .green = color.green * 257,
-        .blue = color.blue * 257,
-        .flags = DoRed | DoGreen | DoBlue,
-    };
-    Color result = XCreateGC(x.display, x.window, 0, NULL);
-    Colormap colormap = DefaultColormap(x.display, x.screen_number);
-    XAllocColor(x.display, colormap, &xcolor);
-    XSetForeground(x.display, result, xcolor.pixel);
-    return result;
-}
-#endif
-/////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-#ifdef ALPHA
-// #include display_alpha.h
-static color_from_config_t color_from_config = color_from_config_xrender;
-#define fill_rectangle(a, b, c, d, e, f, g)                                    \
-    fill_rectangle_xrender(a, b, c, d, e, f, g)
-#else
-//#define color_from_config(x, y) color_from_config_xlib(x, y)
-static color_from_config_t color_from_config = color_from_config_xlib;
-#define fill_rectangle(a, b, c, d, e, f, g) XFillRectangle(a, b, c, d, e, f, g)
-#endif
-
 /* Keep value in range */
 static int fit_in(int value, int min, int max)
 {
@@ -154,17 +44,16 @@ static int size_y(Geometry_context g)
 static void draw_empty(X_context x, Geometry_context g, Gc_colorset color)
 {
     /* Outline */
-    fill_rectangle(x.display, x.window, color.bg, 0, 0,
+    fill_rectangle(x, color.bg, 0, 0,
                    2 * (g.outline + g.border + g.padding) + size_x(g),
                    2 * (g.outline + g.border + g.padding) + size_y(g));
     /* Border */
-    fill_rectangle(x.display, x.window, color.border, g.outline, g.outline,
+    fill_rectangle(x, color.border, g.outline, g.outline,
                    2 * (g.border + g.padding) + size_x(g),
                    2 * (g.border + g.padding) + size_y(g));
     /* Padding */
-    fill_rectangle(x.display, x.window, color.bg, g.outline + g.border,
-                   g.outline + g.border, 2 * g.padding + size_x(g),
-                   2 * g.padding + size_y(g));
+    fill_rectangle(x, color.bg, g.outline + g.border, g.outline + g.border,
+                   2 * g.padding + size_x(g), 2 * g.padding + size_y(g));
 }
 
 /* Draw a given length of filled bar with the given color */
@@ -173,16 +62,16 @@ static void draw_content(X_context x, Geometry_context g, int filled_length,
 {
     if (g.orientation == HORIZONTAL)
     {
-        fill_rectangle(
-            x.display, x.window, color, g.outline + g.border + g.padding,
-            g.outline + g.border + g.padding, filled_length, g.thickness);
+        fill_rectangle(x, color, g.outline + g.border + g.padding,
+                       g.outline + g.border + g.padding, filled_length,
+                       g.thickness);
     }
     else
     {
-        fill_rectangle(
-            x.display, x.window, color, g.outline + g.border + g.padding,
-            g.outline + g.border + g.padding + g.length - filled_length,
-            g.thickness, filled_length);
+        fill_rectangle(x, color, g.outline + g.border + g.padding,
+                       g.outline + g.border + g.padding + g.length -
+                           filled_length,
+                       g.thickness, filled_length);
     }
 }
 
@@ -192,41 +81,17 @@ static void draw_separator(X_context x, Geometry_context g, int position,
 {
     if (g.orientation == HORIZONTAL)
     {
-        fill_rectangle(x.display, x.window, color,
-                       g.outline + g.border + (g.padding / 2) + position,
-                       g.outline + g.border + g.padding, g.padding,
-                       g.thickness);
+        fill_rectangle(
+            x, color, g.outline + g.border + (g.padding / 2) + position,
+            g.outline + g.border + g.padding, g.padding, g.thickness);
     }
     else
     {
-        fill_rectangle(
-            x.display, x.window, color, g.outline + g.border + g.padding,
-            g.outline + g.border + (g.padding / 2) + g.length - position,
-            g.thickness, g.padding);
+        fill_rectangle(x, color, g.outline + g.border + g.padding,
+                       g.outline + g.border + (g.padding / 2) + g.length -
+                           position,
+                       g.thickness, g.padding);
     }
-}
-
-Depth get_default_display_context_depth(Display_context dc)
-{
-    Depth dc_depth = {.depth = DefaultDepth(dc.x.display, dc.x.screen_number),
-                      .visuals =
-                          DefaultVisual(dc.x.display, dc.x.screen_number),
-                      .nvisuals = 1};
-    return dc_depth;
-}
-
-Depth get_display_context_depth(Display_context dc)
-{
-    Depth depth;
-#ifdef ALPHA
-    depth = get_alpha_depth_if_available(dc);
-    if (depth.nvisuals == 1)
-    {
-        return depth;
-    }
-#endif
-    depth = get_default_display_context_depth(dc);
-    return depth;
 }
 
 void compute_geometry(Style conf, Display_context *dc, int *topleft_x,
@@ -266,23 +131,18 @@ void compute_geometry(Style conf, Display_context *dc, int *topleft_x,
 
 void set_color_context_from_config(Display_context *dc, Style conf)
 {
-    dc->color.normal.fg = color_from_config(dc->x, conf.color.normal.fg);
-    dc->color.normal.bg = color_from_config(dc->x, conf.color.normal.bg);
-    dc->color.normal.border =
-        color_from_config(dc->x, conf.color.normal.border);
-    dc->color.overflow.fg = color_from_config(dc->x, conf.color.overflow.fg);
-    dc->color.overflow.bg = color_from_config(dc->x, conf.color.overflow.bg);
-    dc->color.overflow.border =
-        color_from_config(dc->x, conf.color.overflow.border);
-    dc->color.alt.fg = color_from_config(dc->x, conf.color.alt.fg);
-    dc->color.alt.bg = color_from_config(dc->x, conf.color.alt.bg);
-    dc->color.alt.border = color_from_config(dc->x, conf.color.alt.border);
-    dc->color.altoverflow.fg =
-        color_from_config(dc->x, conf.color.altoverflow.fg);
-    dc->color.altoverflow.bg =
-        color_from_config(dc->x, conf.color.altoverflow.bg);
-    dc->color.altoverflow.border =
-        color_from_config(dc->x, conf.color.altoverflow.border);
+    dc->color.normal.fg = conf.color.normal.fg;
+    dc->color.normal.bg = conf.color.normal.bg;
+    dc->color.normal.border = conf.color.normal.border;
+    dc->color.overflow.fg = conf.color.overflow.fg;
+    dc->color.overflow.bg = conf.color.overflow.bg;
+    dc->color.overflow.border = conf.color.overflow.border;
+    dc->color.alt.fg = conf.color.alt.fg;
+    dc->color.alt.bg = conf.color.alt.bg;
+    dc->color.alt.border = conf.color.alt.border;
+    dc->color.altoverflow.fg = conf.color.altoverflow.fg;
+    dc->color.altoverflow.bg = conf.color.altoverflow.bg;
+    dc->color.altoverflow.border = conf.color.altoverflow.border;
 }
 
 /* PUBLIC Returns a new display context from a given configuration. If the
@@ -347,22 +207,22 @@ Display_context init(Style conf)
 
 /* PUBLIC Cleans the X memory buffers. */
 void display_context_destroy(Display_context dc)
-{
-    color_destroy(dc.x.display, dc.color.normal.fg);
-    color_destroy(dc.x.display, dc.color.normal.bg);
-    color_destroy(dc.x.display, dc.color.normal.border);
+{ /*
+     color_destroy(dc.x, dc.color.normal.fg);
+     color_destroy(dc.x, dc.color.normal.bg);
+     color_destroy(dc.x, dc.color.normal.border);
 
-    color_destroy(dc.x.display, dc.color.overflow.fg);
-    color_destroy(dc.x.display, dc.color.overflow.bg);
-    color_destroy(dc.x.display, dc.color.overflow.border);
+     color_destroy(dc.x, dc.color.overflow.fg);
+     color_destroy(dc.x, dc.color.overflow.bg);
+     color_destroy(dc.x, dc.color.overflow.border);
 
-    color_destroy(dc.x.display, dc.color.alt.fg);
-    color_destroy(dc.x.display, dc.color.alt.bg);
-    color_destroy(dc.x.display, dc.color.alt.border);
+     color_destroy(dc.x, dc.color.alt.fg);
+     color_destroy(dc.x, dc.color.alt.bg);
+     color_destroy(dc.x, dc.color.alt.border);
 
-    color_destroy(dc.x.display, dc.color.altoverflow.fg);
-    color_destroy(dc.x.display, dc.color.altoverflow.bg);
-    color_destroy(dc.x.display, dc.color.altoverflow.border);
+     color_destroy(dc.x, dc.color.altoverflow.fg);
+     color_destroy(dc.x, dc.color.altoverflow.bg);
+     color_destroy(dc.x, dc.color.altoverflow.border);*/
 
     XCloseDisplay(dc.x.display);
 }

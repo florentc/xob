@@ -26,7 +26,7 @@ typedef struct
     unsigned char green;
     unsigned char blue;
     unsigned char alpha;
-} RGBA_color;
+} Color;
 
 /**
  * The coloring of a bar.
@@ -35,9 +35,9 @@ typedef struct
  */
 typedef struct
 {
-    RGBA_color fg;
-    RGBA_color bg;
-    RGBA_color border;
+    Color fg;
+    Color bg;
+    Color border;
 } Colors;
 
 typedef struct
