@@ -85,7 +85,16 @@ static int config_setting_lookup_dim(const config_setting_t *setting,
 static _Bool color_spec_is_valid(const char *spec)
 {
     if (spec[0] == '#')
+    {
+        for (int i = 1; i <= 2 + 2 + 2 + 2 && spec[i] != 0; i++)
+        {
+            if (!((spec[i] >= '0' && spec[i] <= '9') ||
+                  (spec[i] >= 'a' && spec[i] <= 'f') ||
+                  (spec[i] >= 'A' && spec[i] <= 'F')))
+                return 0;
+        }
         return 1;
+    }
     return 0;
 }
 
