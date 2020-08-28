@@ -20,6 +20,14 @@
 
 #include <stdio.h>
 
+typedef struct
+{
+    unsigned char red;
+    unsigned char green;
+    unsigned char blue;
+    unsigned char alpha;
+} RGBA_color;
+
 /**
  * The coloring of a bar.
  *
@@ -27,38 +35,10 @@
  */
 typedef struct
 {
-    unsigned int fg;
-    unsigned int bg;
-    unsigned int border;
+    RGBA_color fg;
+    RGBA_color bg;
+    RGBA_color border;
 } Colors;
-
-// Color Channel byte positions.
-#define R 3
-#define G 2
-#define B 1
-#define A 0
-/* Example
-    unsigned int color = 0xff0055;
-    unsigned char *color_a = (unsigned char *)&rgba;
-    unsigned char red, green, blue;
-    red = color_a[R];
-    green = color_a[G];
-    blue = color_a[B];
-*/
-#if 1 // Alternative
-// Retrieve Channel from int
-#define Red(a) ((a >> 24) & 0xff)
-#define Green(a) ((a >> 16) & 0xff)
-#define Blue(a) ((a >> 8) & 0xff)
-#define Alpha(a) ((a >> 0) & 0xff)
-/* Example
-    unsigned int color = 0xff0055;
-    unsigned char red, green, blue;
-    red = Red(color);
-    green = Green(color);
-    blue = Blue(color);
-*/
-#endif
 
 typedef struct
 {
@@ -125,27 +105,99 @@ typedef struct
         {\
             .normal =\
             {\
-                .fg     = 0xffffff,\
-                .bg     = 0x000000,\
-                .border = 0xffffff\
+                .fg = \
+                { \
+                    .red   = 0xff,\
+                    .green = 0xff,\
+                    .blue  = 0xff,\
+                    .alpha = 0xff\
+                },\
+                .bg = \
+                { \
+                    .red   = 0x00,\
+                    .green = 0x00,\
+                    .blue  = 0x00,\
+                    .alpha = 0xff\
+                },\
+                .border = \
+                { \
+                    .red   = 0xff,\
+                    .green = 0xff,\
+                    .blue  = 0xff,\
+                    .alpha = 0xff\
+                }\
             },\
             .overflow =\
             {\
-                .fg     = 0xff0000,\
-                .bg     = 0x000000,\
-                .border = 0xff0000\
+                .fg = \
+                { \
+                    .red   = 0xff,\
+                    .green = 0x00,\
+                    .blue  = 0x00,\
+                    .alpha = 0xff\
+                },\
+                .bg = \
+                { \
+                    .red   = 0x00,\
+                    .green = 0x00,\
+                    .blue  = 0x00,\
+                    .alpha = 0xff\
+                },\
+                .border = \
+                { \
+                    .red   = 0xff,\
+                    .green = 0x00,\
+                    .blue  = 0x00,\
+                    .alpha = 0xff\
+                }\
             },\
             .alt =\
             {\
-                .fg     = 0x555555,\
-                .bg     = 0x000000,\
-                .border = 0x555555\
+                .fg = \
+                { \
+                    .red   = 0x55,\
+                    .green = 0x55,\
+                    .blue  = 0x55,\
+                    .alpha = 0xff\
+                },\
+                .bg = \
+                { \
+                    .red   = 0x00,\
+                    .green = 0x00,\
+                    .blue  = 0x00,\
+                    .alpha = 0xff\
+                },\
+                .border = \
+                { \
+                    .red   = 0x55,\
+                    .green = 0x55,\
+                    .blue  = 0x55,\
+                    .alpha = 0xff\
+                }\
             },\
             .altoverflow =\
             {\
-                .fg     = 0x550000,\
-                .bg     = 0x000000,\
-                .border = 0x550000\
+                .fg = \
+                { \
+                    .red   = 0x55,\
+                    .green = 0x00,\
+                    .blue  = 0x00,\
+                    .alpha = 0xff\
+                },\
+                .bg = \
+                { \
+                    .red   = 0x00,\
+                    .green = 0x00,\
+                    .blue  = 0x00,\
+                    .alpha = 0xff\
+                },\
+                .border = \
+                { \
+                    .red   = 0x55,\
+                    .green = 0x00,\
+                    .blue  = 0x00,\
+                    .alpha = 0xff\
+                }\
             }\
         }\
     }

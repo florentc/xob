@@ -23,7 +23,7 @@
 #include <string.h>
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-typedef Color (*color_from_config_t)(X_context, unsigned int);
+typedef Color (*color_from_config_t)(X_context, RGBA_color);
 
 #ifdef ALPHA
 _Bool is_alpha_visual(Display_context dc, Visual *visual)
@@ -91,33 +91,32 @@ static void fill_rectangle_xrender(Display *display, Window dest, Color c,
     XRenderFillRectangle(display, PictOpSrc, pict, c, x, y, w, h);
 }
 
-inline Color color_from_config_xrender(X_context x, unsigned int color)
+Color color_from_config_xrender(X_context x, RGBA_color color)
 {
     (void)x; // Suppress unused parameter warning
     Color result;
     result = malloc(sizeof(XRenderColor));
-    result->alpha = Alpha(color) * 257;
-    result->red = (Red(color) * 257 * result->alpha) / 0xffffU;
-    result->green = (Green(color) * 257 * result->alpha) / 0xffffU;
-    result->blue = (Blue(color) * 257 * result->alpha) / 0xffffU;
+    result->alpha = color.alpha * 257;
+    result->red = (color.alpha * 257 * result->alpha) / 0xffffU;
+    result->green = (color.alpha * 257 * result->alpha) / 0xffffU;
+    result->blue = (color.alpha * 257 * result->alpha) / 0xffffU;
     return result;
 }
 #else
 
-inline Color color_from_config_xlib(X_context x, unsigned int rgba)
+Color color_from_config_xlib(X_context x, RGBA_color color)
 {
-    const unsigned char *color_a = (unsigned char *)&rgba;
     XColor xcolor = {
-        .red = color_a[R] * 257,
-        .green = color_a[G] * 257,
-        .blue = color_a[B] * 257,
+        .red = color.red * 257,
+        .green = color.green * 257,
+        .blue = color.blue * 257,
         .flags = DoRed | DoGreen | DoBlue,
     };
-    Color color = XCreateGC(x.display, x.window, 0, NULL);
+    Color result = XCreateGC(x.display, x.window, 0, NULL);
     Colormap colormap = DefaultColormap(x.display, x.screen_number);
     XAllocColor(x.display, colormap, &xcolor);
-    XSetForeground(x.display, color, xcolor.pixel);
-    return color;
+    XSetForeground(x.display, result, xcolor.pixel);
+    return result;
 }
 #endif
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
