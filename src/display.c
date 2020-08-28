@@ -207,23 +207,7 @@ Display_context init(Style conf)
 
 /* PUBLIC Cleans the X memory buffers. */
 void display_context_destroy(Display_context dc)
-{ /*
-     color_destroy(dc.x, dc.color.normal.fg);
-     color_destroy(dc.x, dc.color.normal.bg);
-     color_destroy(dc.x, dc.color.normal.border);
-
-     color_destroy(dc.x, dc.color.overflow.fg);
-     color_destroy(dc.x, dc.color.overflow.bg);
-     color_destroy(dc.x, dc.color.overflow.border);
-
-     color_destroy(dc.x, dc.color.alt.fg);
-     color_destroy(dc.x, dc.color.alt.bg);
-     color_destroy(dc.x, dc.color.alt.border);
-
-     color_destroy(dc.x, dc.color.altoverflow.fg);
-     color_destroy(dc.x, dc.color.altoverflow.bg);
-     color_destroy(dc.x, dc.color.altoverflow.border);*/
-
+{
     XCloseDisplay(dc.x.display);
 }
 

@@ -2,7 +2,7 @@
 #include <X11/extensions/Xrender.h>
 #include <stdlib.h>
 
-_Bool is_alpha_visual(Display_context dc, Visual *visual)
+static Bool is_alpha_visual(Display_context dc, Visual *visual)
 {
     XRenderPictFormat *fmt = XRenderFindVisualFormat(dc.x.display, visual);
     if (fmt->type == PictTypeDirect && fmt->direct.alphaMask)
@@ -55,21 +55,20 @@ static Depth get_alpha_depth_if_available(Display_context dc)
     return depth;
 }
 
-static XRenderColor from_color(Color color)
+static XRenderColor xrendercolor_from_color(Color color)
 {
     XRenderColor result;
     result.alpha = color.alpha * 257;
-    result.red = (color.alpha * 257 * result.alpha) / 0xffffU;
-    result.green = (color.alpha * 257 * result.alpha) / 0xffffU;
-    result.blue = (color.alpha * 257 * result.alpha) / 0xffffU;
+    result.red = (color.red * 257 * result.alpha) / 0xffffU;
+    result.green = (color.green * 257 * result.alpha) / 0xffffU;
+    result.blue = (color.blue * 257 * result.alpha) / 0xffffU;
     return result;
 }
 
-/* Draw a rectangle with the given size, position and color */
 void fill_rectangle(X_context xc, Color c, int x, int y, unsigned int w,
                     unsigned int h)
 {
-    XRenderColor xrc = from_color(c);
+    XRenderColor xrc = xrendercolor_from_color(c);
     XWindowAttributes attrib;
     XGetWindowAttributes(xc.display, xc.window, &attrib);
     XRenderPictFormat *pfmt =
