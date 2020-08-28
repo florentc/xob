@@ -32,6 +32,34 @@ typedef struct
     unsigned int border;
 } Colors;
 
+// Color Channel byte positions.
+#define R 3
+#define G 2
+#define B 1
+#define A 0
+/* Example
+    unsigned int color = 0xff0055;
+    unsigned char *color_a = (unsigned char *)&rgba;
+    unsigned char red, green, blue;
+    red = color_a[R];
+    green = color_a[G];
+    blue = color_a[B];
+*/
+#if 1 // Alternative
+// Retrieve Channel from int
+#define Red(a) ((a >> 24) & 0xff)
+#define Green(a) ((a >> 16) & 0xff)
+#define Blue(a) ((a >> 8) & 0xff)
+#define Alpha(a) ((a >> 0) & 0xff)
+/* Example
+    unsigned int color = 0xff0055;
+    unsigned char red, green, blue;
+    red = Red(color);
+    green = Green(color);
+    blue = Blue(color);
+*/
+#endif
+
 typedef struct
 {
     double rel;

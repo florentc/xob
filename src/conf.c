@@ -139,10 +139,11 @@ static unsigned int parse_color(const char *spec)
     char color_hex_chars[8];
     char *end;
 
-    strncpy((char *) color_hex_chars, spec+1, 8);
+    strncpy((char *)color_hex_chars, spec + 1, 8);
 
-    unsigned int color = (unsigned int)strtol((char*)color_hex_chars, &end, 16);
-    if (end - (char*)color_hex_chars <= 2+2+2)
+    unsigned int color =
+        (unsigned int)strtoul((char *)color_hex_chars, &end, 16);
+    if (end - (char *)color_hex_chars <= 2 + 2 + 2)
         color = (color << 8) | 0xff; // 00.XX.XX.XX -> XX.XX.XX.FF
     return color;
 }
@@ -174,7 +175,7 @@ static int config_setting_lookup_color(const config_setting_t *setting,
 }
 
 static int config_setting_lookup_colors(const config_setting_t *setting,
-                                           const char *name, Colors *value)
+                                        const char *name, Colors *value)
 {
     config_setting_t *colorspec_setting;
     int success_status = CONFIG_FALSE;
@@ -288,13 +289,13 @@ Style parse_style_config(FILE *file, const char *stylename, Style default_style)
             if (color_config != NULL)
             {
                 config_setting_lookup_colors(color_config, "normal",
-                                                &style.color.normal);
+                                             &style.color.normal);
                 config_setting_lookup_colors(color_config, "overflow",
-                                                &style.color.overflow);
+                                             &style.color.overflow);
                 config_setting_lookup_colors(color_config, "alt",
-                                                &style.color.alt);
+                                             &style.color.alt);
                 config_setting_lookup_colors(color_config, "altoverflow",
-                                                &style.color.altoverflow);
+                                             &style.color.altoverflow);
             }
         }
         else
