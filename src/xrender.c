@@ -76,7 +76,7 @@ void fill_rectangle(X_context xc, Color c, int x, int y, unsigned int w,
 
     Picture pict = XRenderCreatePicture(xc.display, xc.window, pfmt, 0, 0);
     XRenderFillRectangle(xc.display, PictOpSrc, pict, &xrc, x, y, w, h);
-    XSync(xc.display, 0);
+    XRenderFreePicture(xc.display, pict);
 }
 
 Depth get_display_context_depth(Display_context dc)
