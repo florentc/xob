@@ -23,6 +23,7 @@
 #include <string.h>
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
+typedef Color (*color_from_config_t)(X_context, unsigned int);
 
 #ifdef ALPHA
 _Bool is_alpha_visual(Display_context dc, Visual *visual)
@@ -77,55 +78,60 @@ Depth get_alpha_depth_if_available(Display_context dc)
     XFree(depths_list);
     return depth;
 }
-#endif
 
 /* Draw a rectangle with the given size, position and color */
-static void fill_rectangle(Display *display, Window dest, Color c, int x, int y,
-                           unsigned int w, unsigned int h)
+static void fill_rectangle_xrender(Display *display, Window dest, Color c,
+                                   int x, int y, unsigned int w, unsigned int h)
 {
-#ifdef ALPHA
     XWindowAttributes attrib;
     XGetWindowAttributes(display, dest, &attrib);
     XRenderPictFormat *pfmt = XRenderFindVisualFormat(display, attrib.visual);
 
     Picture pict = XRenderCreatePicture(display, dest, pfmt, 0, 0);
     XRenderFillRectangle(display, PictOpSrc, pict, c, x, y, w, h);
-#else
-    XFillRectangle(display, dest, c, x, y, w, h);
-#endif
 }
 
-/* Get Color from a hex color specification string.
- * Only #RRGGBB[AA] values are allowed for simplicity, otherwise
- * a default color will be used */
-static Color color_from_string(X_context x, unsigned int color_value)
+inline Color color_from_config_xrender(X_context x, unsigned int color)
 {
-    Color color;
-    unsigned char *argb = (unsigned char *)&color_value;
-    printf("R%i G%i B%i A%i", argb[1], argb[2], argb[3], argb[0]);
-#ifdef ALPHA
     (void)x; // Suppress unused parameter warning
-    color = malloc(sizeof(XRenderColor));
-    color->alpha = argb[0] * 257;
-    color->red = (argb[3] * 257 * color->alpha) / 0xffffU;
-    color->green = (argb[2] * 257 * color->alpha) / 0xffffU;
-    color->blue = (argb[1] * 257 * color->alpha) / 0xffffU;
+    Color result;
+    result = malloc(sizeof(XRenderColor));
+    result->alpha = Alpha(color) * 257;
+    result->red = (Red(color) * 257 * result->alpha) / 0xffffU;
+    result->green = (Green(color) * 257 * result->alpha) / 0xffffU;
+    result->blue = (Blue(color) * 257 * result->alpha) / 0xffffU;
+    return result;
+}
 #else
+
+inline Color color_from_config_xlib(X_context x, unsigned int rgba)
+{
+    const unsigned char *color_a = (unsigned char *)&rgba;
     XColor xcolor = {
-        .red = argb[3] * 257,
-        .green = argb[2] * 257,
-        .blue = argb[1] * 257,
+        .red = color_a[R] * 257,
+        .green = color_a[G] * 257,
+        .blue = color_a[B] * 257,
         .flags = DoRed | DoGreen | DoBlue,
     };
-    color = XCreateGC(x.display, x.window, 0, NULL);
+    Color color = XCreateGC(x.display, x.window, 0, NULL);
     Colormap colormap = DefaultColormap(x.display, x.screen_number);
     XAllocColor(x.display, colormap, &xcolor);
     XSetForeground(x.display, color, xcolor.pixel);
-#endif
     return color;
 }
-
+#endif
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+#ifdef ALPHA
+// #include display_alpha.h
+static color_from_config_t color_from_config = color_from_config_xrender;
+#define fill_rectangle(a, b, c, d, e, f, g)                                    \
+    fill_rectangle_xrender(a, b, c, d, e, f, g)
+#else
+//#define color_from_config(x, y) color_from_config_xlib(x, y)
+static color_from_config_t color_from_config = color_from_config_xlib;
+#define fill_rectangle(a, b, c, d, e, f, g) XFillRectangle(a, b, c, d, e, f, g)
+#endif
 
 /* Keep value in range */
 static int fit_in(int value, int min, int max)
@@ -261,23 +267,23 @@ void compute_geometry(Style conf, Display_context *dc, int *topleft_x,
 
 void set_color_context_from_config(Display_context *dc, Style conf)
 {
-    dc->color.normal.fg = color_from_string(dc->x, conf.color.normal.fg);
-    dc->color.normal.bg = color_from_string(dc->x, conf.color.normal.bg);
+    dc->color.normal.fg = color_from_config(dc->x, conf.color.normal.fg);
+    dc->color.normal.bg = color_from_config(dc->x, conf.color.normal.bg);
     dc->color.normal.border =
-        color_from_string(dc->x, conf.color.normal.border);
-    dc->color.overflow.fg = color_from_string(dc->x, conf.color.overflow.fg);
-    dc->color.overflow.bg = color_from_string(dc->x, conf.color.overflow.bg);
+        color_from_config(dc->x, conf.color.normal.border);
+    dc->color.overflow.fg = color_from_config(dc->x, conf.color.overflow.fg);
+    dc->color.overflow.bg = color_from_config(dc->x, conf.color.overflow.bg);
     dc->color.overflow.border =
-        color_from_string(dc->x, conf.color.overflow.border);
-    dc->color.alt.fg = color_from_string(dc->x, conf.color.alt.fg);
-    dc->color.alt.bg = color_from_string(dc->x, conf.color.alt.bg);
-    dc->color.alt.border = color_from_string(dc->x, conf.color.alt.border);
+        color_from_config(dc->x, conf.color.overflow.border);
+    dc->color.alt.fg = color_from_config(dc->x, conf.color.alt.fg);
+    dc->color.alt.bg = color_from_config(dc->x, conf.color.alt.bg);
+    dc->color.alt.border = color_from_config(dc->x, conf.color.alt.border);
     dc->color.altoverflow.fg =
-        color_from_string(dc->x, conf.color.altoverflow.fg);
+        color_from_config(dc->x, conf.color.altoverflow.fg);
     dc->color.altoverflow.bg =
-        color_from_string(dc->x, conf.color.altoverflow.bg);
+        color_from_config(dc->x, conf.color.altoverflow.bg);
     dc->color.altoverflow.border =
-        color_from_string(dc->x, conf.color.altoverflow.border);
+        color_from_config(dc->x, conf.color.altoverflow.border);
 }
 
 /* PUBLIC Returns a new display context from a given configuration. If the

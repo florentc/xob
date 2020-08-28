@@ -169,8 +169,7 @@ int main(int argc, char *argv[])
     }
 
     /* Parsing the config file */
-    printf("Info: reading configuration from %s.\n",
-            real_config_file_path);
+    printf("Info: reading configuration from %s.\n", real_config_file_path);
     style = parse_style_config(config_file, style_name, style);
     fclose(config_file);
 
