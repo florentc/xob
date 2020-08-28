@@ -23,8 +23,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-typedef config_t *Config;
-
 static int config_setting_lookup_float_or_int(const config_setting_t *setting,
                                               const char *name, double *value)
 {
@@ -265,16 +263,16 @@ static int config_setting_lookup_orientation(const config_setting_t *setting,
 
 Style parse_style_config(FILE *file, const char *stylename, Style default_style)
 {
-    Config config = malloc(sizeof(config_t));
-    config_init(config);
+    config_t config;
+    config_init(&config);
 
     config_setting_t *xob_config;
     config_setting_t *color_config;
     Style style = default_style;
 
-    if (config_read(config, file))
+    if (config_read(&config, file))
     {
-        xob_config = config_lookup(config, stylename);
+        xob_config = config_lookup(&config, stylename);
         if (xob_config != NULL)
         {
             config_setting_lookup_int(xob_config, "thickness",
@@ -310,10 +308,9 @@ Style parse_style_config(FILE *file, const char *stylename, Style default_style)
     else
     {
         fprintf(stderr, "Error: in configuration, line %d - %s\n",
-                config_error_line(config), config_error_text(config));
+                config_error_line(&config), config_error_text(&config));
     }
 
-    config_destroy(config);
-    free(config);
+    config_destroy(&config);
     return style;
 }

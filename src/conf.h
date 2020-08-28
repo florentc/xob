@@ -28,11 +28,6 @@ typedef struct
     unsigned char alpha;
 } Color;
 
-/**
- * The coloring of a bar.
- *
- * Colors storage order is 0xRRGGBBAA.
- */
 typedef struct
 {
     Color fg;
