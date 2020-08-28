@@ -19,18 +19,7 @@
 #define DISPLAY_H
 
 #include "conf.h"
-
 #include <X11/Xlib.h>
-
-#ifndef ALPHA
-typedef GC Color;
-#define color_destroy(a, b) XFreeGC((a), (b))
-#else
-#include <X11/extensions/Xrender.h>
-#include <stdlib.h>
-typedef XRenderColor *Color;
-#define color_destroy(a, b) (free((b)))
-#endif
 
 typedef enum
 {
@@ -84,5 +73,9 @@ Display_context show(Display_context dc, int value, int cap,
                      Overflow_mode overflow_mode, Show_mode show_mode);
 Display_context hide(Display_context dc);
 void display_context_destroy(Display_context dc);
+
+void fill_rectangle(X_context xc, Color c, int x, int y, unsigned int w,
+                    unsigned int h);
+Depth get_display_context_depth(Display_context dc);
 
 #endif /* __DISPLAY_H__ */

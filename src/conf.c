@@ -134,7 +134,7 @@ unsigned char *parse_hex(const char *hex)
 }
 */
 
-static RGBA_color parse_color(const char *spec)
+static Color parse_color(const char *spec)
 {
     char color_hex_chars[8];
     char *end;
@@ -145,15 +145,15 @@ static RGBA_color parse_color(const char *spec)
         (unsigned int)strtoul((char *)color_hex_chars, &end, 16);
     if (end - (char *)color_hex_chars <= 2 + 2 + 2)
         color = (color << 8) | 0xff; // 00.XX.XX.XX -> XX.XX.XX.FF
-    RGBA_color result = {.red = ((color >> 24) & 0xff),
-                         .green = ((color >> 16) & 0xff),
-                         .blue = ((color >> 8) & 0xff),
-                         .alpha = ((color >> 0) & 0xff)};
+    Color result = {.red = ((color >> 24) & 0xff),
+                    .green = ((color >> 16) & 0xff),
+                    .blue = ((color >> 8) & 0xff),
+                    .alpha = ((color >> 0) & 0xff)};
     return result;
 }
 
 static int config_setting_lookup_color(const config_setting_t *setting,
-                                       const char *name, RGBA_color *value)
+                                       const char *name, Color *value)
 {
     const char *colorstring;
     int success_status = CONFIG_FALSE;
