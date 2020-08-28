@@ -1,7 +1,7 @@
 #include "display.h"
 #include <X11/Xlib.h>
 
-GC gc_from_color(X_context x, Color color)
+static GC gc_from_color(X_context x, Color color)
 {
     XColor xcolor = {
         .red = color.red * 257,
@@ -21,6 +21,7 @@ void fill_rectangle(X_context xc, Color c, int x, int y, unsigned int w,
 {
     GC xgc = gc_from_color(xc, c);
     XFillRectangle(xc.display, xc.window, xgc, x, y, w, h);
+    XFreeGC(xc.display, xgc);
 }
 
 Depth get_display_context_depth(Display_context dc)
