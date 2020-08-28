@@ -88,9 +88,9 @@ static _Bool color_spec_is_valid(const char *spec)
     {
         for (int i = 1; i <= 2 + 2 + 2 + 2 && spec[i] != 0; i++)
         {
-            if (!((spec[1] >= '0' && spec[1] <= '9') ||
-                  (spec[1] >= 'a' && spec[1] <= 'f') ||
-                  (spec[1] >= 'A' && spec[1] <= 'F')))
+            if (!((spec[i] >= '0' && spec[i] <= '9') ||
+                  (spec[i] >= 'a' && spec[i] <= 'f') ||
+                  (spec[i] >= 'A' && spec[i] <= 'F')))
                 return 0;
         }
         return 1;
