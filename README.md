@@ -14,6 +14,11 @@ xob depends on libx11 and libconfig.
     make
     make install
 
+Optionally you can build with transparency support (with libxrender as an extra dependency)
+
+    make enable_alpha=yes
+    make enable_alpha=yes install
+
 Packages are available in the following repositories:
 
 [![Packaging status](https://repology.org/badge/vertical-allrepos/xob.svg)](https://repology.org/project/xob/versions)
