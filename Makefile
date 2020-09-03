@@ -8,9 +8,9 @@ SOURCES = src/conf.c src/display.c src/main.c
 ifdef enable_alpha
 	CFLAGS += -DALPHA=1
 	LIBS += xrender
-	SOURCES += src/xrender.c
+	SOURCES += src/display_xrender.c
 else
-	SOURCES += src/xlib.c
+	SOURCES += src/display_xlib.c
 endif
 
 OBJECTS = $(SOURCES:.c=.o)

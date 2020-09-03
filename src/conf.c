@@ -14,7 +14,6 @@
  * You should have received a copy of the GNU General Public License
  * along with xob.  If not, see <https://www.gnu.org/licenses/>.
  */
-#define CONFIG_INTERNALS 1
 
 #include "conf.h"
 #include <errno.h>
@@ -82,9 +81,9 @@ static int config_setting_lookup_dim(const config_setting_t *setting,
     return success_status;
 }
 
-static _Bool color_spec_is_valid(const char *spec)
+static inline _Bool color_spec_is_valid(const char *spec)
 {
-    if (spec[0] == '#')
+    if (spec[0] == '#' && (strlen(spec) == 7 || strlen(spec) == 9))
     {
         for (int i = 1; i <= 2 + 2 + 2 + 2 && spec[i] != 0; i++)
         {
@@ -98,60 +97,19 @@ static _Bool color_spec_is_valid(const char *spec)
     return 0;
 }
 
-/*
-unsigned char *parse_hex(const char *hex)
+static inline Color parse_color(const char *spec)
 {
-    char *cur = (char *)hex;
-
-    const unsigned char n = strlen(cur);
-    static unsigned char rgba[4];
-    if (*cur == '#' && (n == 6 + 1 || n == 8 + 1))
-    {
-        cur++;
-        for (int i = 0; i < 4; i++)
-        {
-            if (i == 3 && *cur == 0)
-            {
-                rgba[3] = 255;
-                break;
-            }
-            for (int j = 0; j < 2; j++)
-            {
-                rgba[i] <<= 4;
-                if (*cur >= '0' && *cur <= '9')
-                    rgba[i] |= *cur - '0';
-                else if (*cur >= 'A' && *cur <= 'F')
-                    rgba[i] |= *cur - ('A' - 10);
-                else if (*cur >= 'a' && *cur <= 'f')
-                    rgba[i] |= *cur - ('a' - 10);
-                else
-                {
-                    cur = NULL;
-                    break;
-                }
-                cur++;
-            }
-            if (cur == NULL)
-            {
-                return NULL;
-            }
-        }
-    }
-    return rgba;
-}
-*/
-
-static Color parse_color(const char *spec)
-{
-    char color_hex_chars[8];
+    char color_hex_chars[9];
     char *end;
 
     strncpy((char *)color_hex_chars, spec + 1, 8);
 
     unsigned int color =
         (unsigned int)strtoul((char *)color_hex_chars, &end, 16);
+
     if (end - (char *)color_hex_chars <= 2 + 2 + 2)
         color = (color << 8) | 0xff; // 00.XX.XX.XX -> XX.XX.XX.FF
+
     Color result = {.red = ((color >> 24) & 0xff),
                     .green = ((color >> 16) & 0xff),
                     .blue = ((color >> 8) & 0xff),
