@@ -36,7 +36,7 @@ int main(int argc, char *argv[])
     char *style_name = DEFAULT_STYLE;
 
     /* Command-line arguments */
-    char opt;
+    int opt;
     while ((opt = getopt(argc, argv, "m:t:c:s:qvh")) != -1)
     {
         switch (opt)
