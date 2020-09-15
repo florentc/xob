@@ -43,7 +43,7 @@ Connect the named pipe to the standard input of an xob instance.
 
 Set up your environment so that after updating audio volume, backlight intensity, or whatever, to a new value like 43, it writes that value into the pipe:
 
-    echo 43 > /tmp/xobpipe
+    echo 43 >> /tmp/xobpipe
 
 Adapt this use-case to your workflow (scripts, callbacks, or keybindings handled by the window manager).
 
