@@ -57,21 +57,30 @@ from pulsectl import Pulse, PulseLoopStop
 import sys
 
 # Adapt to your use-case
-sink_id = 0
+sink_index = int(sys.argv[1]) if len(sys.argv) > 1 else 0
 
 with Pulse() as pulse:
   def callback(ev):
-    if ev.index == sink_id:
+    if ev.index == sink_index:
         raise PulseLoopStop
   try:
     pulse.event_mask_set('sink')
     pulse.event_callback_set(callback)
-    last_value = round(pulse.sink_list()[sink_id].volume.value_flat * 100)
-    last_mute = pulse.sink_list()[sink_id].mute == 1
+
+    sinks = {s.index:s for s in pulse.sink_list()}
+    if not sink_index in sinks:
+      raise KeyError(f"Sink index {sink_index} not found in list of sinks, see pacmd list-sinks and use the `index` number")
+
+    last_value = round(sinks[sink_index].volume.value_flat * 100)
+    last_mute = sinks[sink_index].mute == 1
+
     while True:
       pulse.event_listen()
-      value = round(pulse.sink_list()[sink_id].volume.value_flat * 100)
-      mute = pulse.sink_list()[sink_id].mute == 1
+
+      sinks = {s.index:s for s in pulse.sink_list()}
+      value = round(sinks[sink_index].volume.value_flat * 100)
+      mute = sinks[sink_index].mute == 1
+
       if value != last_value or mute != last_mute:
         print(value, end='')
         if mute:
@@ -81,11 +90,11 @@ with Pulse() as pulse:
         last_value = value
         last_mute = mute
       sys.stdout.flush()
-  except:
-    pass
+  except Exception as e:
+    print(f"ERROR: {e}", file=sys.stderr)
 ```
 
-This script listens to volume and mute events. No matter how the volume changes (keybindings, pulse control panel, headphones plugged-in), it will instantly show up the volume bar. You might need to adapt the `sink_id`.
+This script listens to volume and mute events. No matter how the volume changes (keybindings, pulse control panel, headphones plugged-in), it will instantly show up the volume bar. You can pass in the index of the sink on the command line, as given by `pacmd list-sinks`.
 
 ### Ready to use brightness bar
 
