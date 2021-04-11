@@ -94,7 +94,7 @@ One can access the brightness value from `/sys/class/backlight/video_backlight/b
 ```python
 #!/usr/bin/env python3
 from watchdog.observers import Observer
-from watchdog.events import FileSystemEventHandler
+from watchdog.events import FileSystemEventHandler, FileModifiedEvent
 import sys
 import time
 
@@ -111,7 +111,8 @@ def notify(file_path):
 class Handler(FileSystemEventHandler):
 
     def on_modified(self, event):
-        notify(event.src_path)
+        if isinstance(event, FileModifiedEvent):
+            notify(event.src_path)
 
 handler = Handler()
 observer = Observer()
