@@ -48,7 +48,7 @@ Connect the named pipe to the standard input of an xob instance.
 
 Set up your environment so that after updating audio volume, backlight intensity, or whatever, to a new value like 43, it writes that value into the pipe:
 
-    echo 43 > /tmp/xobpipe
+    echo 43 >> /tmp/xobpipe
 
 Adapt this use-case to your workflow (scripts, callbacks, or keybindings handled by the window manager).
 
@@ -92,6 +92,45 @@ with Pulse() as pulse:
 
 This script listens to volume and mute events. No matter how the volume changes (keybindings, pulse control panel, headphones plugged-in), it will instantly show up the volume bar. You might need to adapt the `sink_id`.
 
+### Ready to use brightness bar
+
+One can access the brightness value from `/sys/class/backlight/video_backlight/brightness` (where `video` is your video device). The following script watches for modifications on that file using the watchdog python library. No matter how the brightness changes, this script will return the new brightness value. You may have to change the path of `brightness_file` if you are not using an Intel device. Simply pipe it in xob and you are ready to go. `./brightness-watcher.py | xob`.
+
+```python
+#!/usr/bin/env python3
+from watchdog.observers import Observer
+from watchdog.events import FileSystemEventHandler, FileModifiedEvent
+import sys
+import time
+
+brightness_file = '/sys/class/backlight/intel_backlight/brightness'
+max_brightness_file ='/sys/class/backlight/intel_backlight/max_brightness'
+with open(max_brightness_file, 'r') as f:
+    maxvalue = int(f.read())
+
+def notify(file_path):
+    with open(file_path, 'r') as f: 
+        value = int(int(f.read())/maxvalue*100)
+        print(value)
+
+class Handler(FileSystemEventHandler):
+
+    def on_modified(self, event):
+        if isinstance(event, FileModifiedEvent):
+            notify(event.src_path)
+
+handler = Handler()
+observer = Observer()
+observer.schedule(handler, path=brightness_file)
+observer.start()
+try:
+    while True:
+        sys.stdout.flush()
+        time.sleep(1)
+except KeyboardInterrupt:
+    observer.stop()
+observer.join()
+```
 ## Appearance
 
 When starting, xob looks for the configuration file in the following order:
