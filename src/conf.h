@@ -22,10 +22,18 @@
 
 typedef struct
 {
-    const char *fg;
-    const char *bg;
-    const char *border;
-} Colorspec;
+    unsigned char red;
+    unsigned char green;
+    unsigned char blue;
+    unsigned char alpha;
+} Color;
+
+typedef struct
+{
+    Color fg;
+    Color bg;
+    Color border;
+} Colors;
 
 typedef struct
 {
@@ -58,10 +66,10 @@ typedef struct
     Overflow_mode overflow;
     struct
     {
-        Colorspec normal;
-        Colorspec overflow;
-        Colorspec alt;
-        Colorspec altoverflow;
+        Colors normal;
+        Colors overflow;
+        Colors alt;
+        Colors altoverflow;
     } color;
 } Style;
 
@@ -92,27 +100,99 @@ typedef struct
         {\
             .normal =\
             {\
-                .fg     = "#ffffff",\
-                .bg     = "#000000",\
-                .border = "#ffffff"\
+                .fg = \
+                { \
+                    .red   = 0xff,\
+                    .green = 0xff,\
+                    .blue  = 0xff,\
+                    .alpha = 0xff\
+                },\
+                .bg = \
+                { \
+                    .red   = 0x00,\
+                    .green = 0x00,\
+                    .blue  = 0x00,\
+                    .alpha = 0xff\
+                },\
+                .border = \
+                { \
+                    .red   = 0xff,\
+                    .green = 0xff,\
+                    .blue  = 0xff,\
+                    .alpha = 0xff\
+                }\
             },\
             .overflow =\
             {\
-                .fg     = "#ff0000",\
-                .bg     = "#000000",\
-                .border = "#ff0000"\
+                .fg = \
+                { \
+                    .red   = 0xff,\
+                    .green = 0x00,\
+                    .blue  = 0x00,\
+                    .alpha = 0xff\
+                },\
+                .bg = \
+                { \
+                    .red   = 0x00,\
+                    .green = 0x00,\
+                    .blue  = 0x00,\
+                    .alpha = 0xff\
+                },\
+                .border = \
+                { \
+                    .red   = 0xff,\
+                    .green = 0x00,\
+                    .blue  = 0x00,\
+                    .alpha = 0xff\
+                }\
             },\
             .alt =\
             {\
-                .fg     = "#555555",\
-                .bg     = "#000000",\
-                .border = "#555555"\
+                .fg = \
+                { \
+                    .red   = 0x55,\
+                    .green = 0x55,\
+                    .blue  = 0x55,\
+                    .alpha = 0xff\
+                },\
+                .bg = \
+                { \
+                    .red   = 0x00,\
+                    .green = 0x00,\
+                    .blue  = 0x00,\
+                    .alpha = 0xff\
+                },\
+                .border = \
+                { \
+                    .red   = 0x55,\
+                    .green = 0x55,\
+                    .blue  = 0x55,\
+                    .alpha = 0xff\
+                }\
             },\
             .altoverflow =\
             {\
-                .fg     = "#550000",\
-                .bg     = "#000000",\
-                .border = "#550000"\
+                .fg = \
+                { \
+                    .red   = 0x55,\
+                    .green = 0x00,\
+                    .blue  = 0x00,\
+                    .alpha = 0xff\
+                },\
+                .bg = \
+                { \
+                    .red   = 0x00,\
+                    .green = 0x00,\
+                    .blue  = 0x00,\
+                    .alpha = 0xff\
+                },\
+                .border = \
+                { \
+                    .red   = 0x55,\
+                    .green = 0x00,\
+                    .blue  = 0x00,\
+                    .alpha = 0xff\
+                }\
             }\
         }\
     }

@@ -19,7 +19,6 @@
 #define DISPLAY_H
 
 #include "conf.h"
-
 #include <X11/Xlib.h>
 
 typedef enum
@@ -39,9 +38,9 @@ typedef struct
 
 typedef struct
 {
-    GC fg;
-    GC bg;
-    GC border;
+    Color fg;
+    Color bg;
+    Color border;
 } Gc_colorset;
 
 typedef struct
@@ -73,5 +72,12 @@ Display_context init(Style conf);
 Display_context show(Display_context dc, int value, int cap,
                      Overflow_mode overflow_mode, Show_mode show_mode);
 Display_context hide(Display_context dc);
+void display_context_destroy(Display_context dc);
+
+/* Draw a rectangle with the given size, position and color */
+void fill_rectangle(X_context xc, Color c, int x, int y, unsigned int w,
+                    unsigned int h);
+
+Depth get_display_context_depth(Display_context dc);
 
 #endif /* __DISPLAY_H__ */
