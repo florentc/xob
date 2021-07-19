@@ -9,15 +9,12 @@ A lightweight configurable overlay volume/backlight/progress/anything bar for th
 
 ## Installation
 
-xob depends on libx11 and libconfig.
+xob depends on libx11, libxrender (for optional transparency support) and libconfig.
 
     make
     make install
 
-Optionally you can build with transparency support (with libxrender as an extra dependency)
-
-    make enable_alpha=yes
-    make enable_alpha=yes install
+To build xob without transparency support and rely only on libx11 and libconfig: `make enable_alpha=no`.
 
 Packages are available in the following repositories:
 
