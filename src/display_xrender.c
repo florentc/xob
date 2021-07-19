@@ -23,11 +23,7 @@
 static Bool is_alpha_visual(Display_context dc, Visual *visual)
 {
     XRenderPictFormat *fmt = XRenderFindVisualFormat(dc.x.display, visual);
-    if (fmt->type == PictTypeDirect && fmt->direct.alphaMask)
-    {
-        return True;
-    }
-    return False;
+    return (fmt->type == PictTypeDirect && fmt->direct.alphaMask);
 }
 
 static Depth get_alpha_depth_if_available(Display_context dc)
@@ -75,12 +71,11 @@ static Depth get_alpha_depth_if_available(Display_context dc)
 
 static XRenderColor xrendercolor_from_color(Color color)
 {
-    XRenderColor result;
-    result.alpha = color.alpha * 257;
-    result.red = (color.red * 257 * result.alpha) / 0xffffU;
-    result.green = (color.green * 257 * result.alpha) / 0xffffU;
-    result.blue = (color.blue * 257 * result.alpha) / 0xffffU;
-    return result;
+    unsigned short alpha = color.alpha * 257;
+    return (XRenderColor){.alpha = alpha,
+                          .red = (color.red * 257 * alpha) / 0xffffU,
+                          .green = (color.green * 257 * alpha) / 0xffffU,
+                          .blue = (color.blue * 257 * alpha) / 0xffffU};
 }
 
 void fill_rectangle(X_context xc, Color c, int x, int y, unsigned int w,
@@ -102,11 +97,6 @@ Depth get_display_context_depth(Display_context dc)
     Depth depth = {.depth = DefaultDepth(dc.x.display, dc.x.screen_number),
                    .visuals = DefaultVisual(dc.x.display, dc.x.screen_number),
                    .nvisuals = 1};
-
     Depth adepth = get_alpha_depth_if_available(dc);
-    if (adepth.nvisuals == 1)
-    {
-        return adepth;
-    }
-    return depth;
+    return adepth.nvisuals == 1 ? adepth : depth;
 }
