@@ -214,7 +214,7 @@ The values for thickness, padding, border, and outline are a number of pixels.
 
 ![Colors guide](/doc/img/colors.svg)
 
-There are three colors: foreground, background, and border. They change depending on the displayed value. Also, there are two ways to display overflows: use the overflow color with no feedback on how much it overflows ("hidden" mode), or use the overflow color on part on the bar only proportionally to how much the value overflows ("proportional" mode).
+There are three colors: foreground, background, and border. They change depending on the displayed value. Also, there are two ways to display overflows: use the overflow color with no feedback on how much it overflows ("hidden" mode), or use the overflow color on part of the bar only proportionally to how much the value overflows ("proportional" mode).
 
 Illustration | Display mode       | Overflow type
 ------------ | ------------------ | -------------
