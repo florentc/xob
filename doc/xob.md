@@ -118,16 +118,16 @@ In the following, a dot "." means "suboption". For instance "color.normal.fg" me
 
 Each of the following have three suboptions ".fg", ".bg", and ".border" corresponding to hexadecimal RGB or RGBA specifications (e.g. #ff0000 or #ff0000ff) of the colors of the foreground, the backgroud, and the border. If xob is built without transparency support, the alpha channel is ignored.
 
-**color.normal** *colors* (default: {fg = "#ffffff"; bg = "#000000"; border = "#ffffff";})
+**color.normal** *colors* (default: {fg = "#ffffff"; bg = "#00000090"; border = "#ffffff";})
 :   Colors in the general case.
 
-**color.alt** *colors* (default: {fg = "#555555"; bg = "#000000"; border = "#555555";})
+**color.alt** *colors* (default: {fg = "#555555"; bg = "#00000090"; border = "#555555";})
 :   Colors for alternate display (e.g. muted).
 
-**color.overflow** *colors* (default: {fg = "#ff0000"; bg = "#000000"; border = "#ff0000";})
+**color.overflow** *colors* (default: {fg = "#ff0000"; bg = "#00000090"; border = "#ff0000";})
 :   Colors in case of overflow (the displayed valued exceeds the maximum).
 
-**color.altoverflow** *colors* (default: {fg = "#ff0000"; bg = "#000000"; border = "#555555";})
+**color.altoverflow** *colors* (default: {fg = "#ff0000"; bg = "#00000090"; border = "#555555";})
 :   Colors for alternate display in case of overflow.
 
 
@@ -184,22 +184,22 @@ This example configuration file provides two styles "volume" and "backlight". In
         color = {
             normal = {
                 fg     = "#ffffff";
-                bg     = "#000000";
+                bg     = "#00000090";
                 border = "#ffffff";
             };
             alt = {
                 fg     = "#555555";
-                bg     = "#000000";
+                bg     = "#00000090";
                 border = "#555555";
             };
             overflow = {
                 fg     = "#ff0000";
-                bg     = "#000000";
+                bg     = "#00000090";
                 border = "#ff0000";
             };
             altoverflow = {
                 fg     = "#550000";
-                bg     = "#000000";
+                bg     = "#00000090";
                 border = "#550000";
             };
         };

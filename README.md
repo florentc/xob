@@ -162,22 +162,22 @@ Consult the man page for detailed information about the configuration file and t
         color = {
             normal = {
                 fg     = "#ffffff";
-                bg     = "#000000";
+                bg     = "#00000090";
                 border = "#ffffff";
             };
             alt = {
                 fg     = "#555555";
-                bg     = "#000000";
+                bg     = "#00000090";
                 border = "#555555";
             };
             overflow = {
                 fg     = "#ff0000";
-                bg     = "#000000";
+                bg     = "#00000090";
                 border = "#ff0000";
             };
             altoverflow = {
                 fg     = "#550000";
-                bg     = "#000000";
+                bg     = "#00000090";
                 border = "#550000";
             };
         };

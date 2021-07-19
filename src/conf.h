@@ -114,7 +114,7 @@ typedef struct
                     .red   = 0x00,\
                     .green = 0x00,\
                     .blue  = 0x00,\
-                    .alpha = 0xff\
+                    .alpha = 0x90\
                 },\
                 .border = \
                 { \
@@ -138,7 +138,7 @@ typedef struct
                     .red   = 0x00,\
                     .green = 0x00,\
                     .blue  = 0x00,\
-                    .alpha = 0xff\
+                    .alpha = 0x90\
                 },\
                 .border = \
                 { \
@@ -162,7 +162,7 @@ typedef struct
                     .red   = 0x00,\
                     .green = 0x00,\
                     .blue  = 0x00,\
-                    .alpha = 0xff\
+                    .alpha = 0x90\
                 },\
                 .border = \
                 { \
@@ -186,7 +186,7 @@ typedef struct
                     .red   = 0x00,\
                     .green = 0x00,\
                     .blue  = 0x00,\
-                    .alpha = 0xff\
+                    .alpha = 0x90\
                 },\
                 .border = \
                 { \
