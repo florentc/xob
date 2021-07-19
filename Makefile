@@ -7,7 +7,6 @@ SOURCES = src/conf.c src/display.c src/main.c
 # Feature: alpha channel (transparency)
 enable_alpha ?= yes
 ifeq ($(enable_alpha),yes)
-	CFLAGS	+= -DALPHA=1
 	LIBS    += xrender
 	SOURCES	+= src/display_xrender.c
 else
