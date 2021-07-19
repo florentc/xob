@@ -18,7 +18,7 @@
 #include "display.h"
 #include <X11/Xlib.h>
 
-static GC gc_from_color(X_context x, Color color)
+static GC gc_from_color(X_context xc, Color color)
 {
     XColor xcolor = {
         .red = color.red * 257,
@@ -26,26 +26,24 @@ static GC gc_from_color(X_context x, Color color)
         .blue = color.blue * 257,
         .flags = DoRed | DoGreen | DoBlue,
     };
-    GC result = XCreateGC(x.display, x.window, 0, NULL);
-    Colormap colormap = DefaultColormap(x.display, x.screen_number);
-    XAllocColor(x.display, colormap, &xcolor);
-    XSetForeground(x.display, result, xcolor.pixel);
-    return result;
+    GC gc = XCreateGC(xc.display, xc.window, 0, NULL);
+    Colormap colormap = DefaultColormap(xc.display, xc.screen_number);
+    XAllocColor(xc.display, colormap, &xcolor);
+    XSetForeground(xc.display, gc, xcolor.pixel);
+    return gc;
 }
 
-void fill_rectangle(X_context xc, Color c, int x, int y, unsigned int w,
+void fill_rectangle(X_context xc, Color color, int x, int y, unsigned int w,
                     unsigned int h)
 {
-    GC xgc = gc_from_color(xc, c);
+    GC xgc = gc_from_color(xc, color);
     XFillRectangle(xc.display, xc.window, xgc, x, y, w, h);
     XFreeGC(xc.display, xgc);
 }
 
 Depth get_display_context_depth(Display_context dc)
 {
-    Depth dc_depth = {.depth = DefaultDepth(dc.x.display, dc.x.screen_number),
-                      .visuals =
-                          DefaultVisual(dc.x.display, dc.x.screen_number),
-                      .nvisuals = 1};
-    return dc_depth;
+    return (Depth){.depth = DefaultDepth(dc.x.display, dc.x.screen_number),
+                   .visuals = DefaultVisual(dc.x.display, dc.x.screen_number),
+                   .nvisuals = 1};
 }
