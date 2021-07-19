@@ -1,6 +1,6 @@
 % XOB(1) xob 0.2 | xob Manual
 % Florent Ch
-% March 2020
+% July 2021
 
 # NAME
 
@@ -116,7 +116,7 @@ In the following, a dot "." means "suboption". For instance "color.normal.fg" me
 **overflow** *"hidden" | "proportional"* (default: proportional)
 :   When "hidden" is set, a full bar is displayed using the overflow color when the value exceeds the maximum, whatever that value is. When "proportional" is set, only a portion of the bar whose size depends on the overflow is displayed using the overflow color. If the value is twice the maximum, half the bar is displayed using the overflow color. The two zones are separated by a padding-sized gap.
 
-Each of the following have three suboptions ".fg", ".bg", and ".border" corresponding to hexadecimal RGB specifications (e.g. #ff0000) of the colors of the foreground, the backgroud, and the border.
+Each of the following have three suboptions ".fg", ".bg", and ".border" corresponding to hexadecimal RGB or RGBA specifications (e.g. #ff0000 or #ff0000ff) of the colors of the foreground, the backgroud, and the border. If xob is built without transparency support, the alpha channel is ignored.
 
 **color.normal** *colors* (default: {fg = "#ffffff"; bg = "#000000"; border = "#ffffff";})
 :   Colors in the general case.
