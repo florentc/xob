@@ -205,21 +205,27 @@ This example configuration file provides two styles "volume" and "backlight". In
         };
     };
 
-# BASIC USE CASE EXAMPLE
+# GENERAL USE CASE
 
-You can manage a basic audio volume or backlight intensity (or whatever) bar using a named pipe. Create a named pipe, e.g. */tmp/xobpipe*, on your filesystem using
+Use a program that listens to events (such as a change in audio volume levels) and issues new values on the standard output automatically. Launch `the_listener_program | xob`. Ready to use input programs for audio volume and screen backlight are available on the xob project homepage: https://github.com/florentc/xob
+
+## FALLBACK METHOD
+
+In case no input program fits your needs, you may trigger changes manually. Append new values in a named pipe (a pipe that persists as a special file on the filesystem) and have xob consume them as they arrive.
+
+Create a named pipe, e.g. */tmp/xobpipe*, on your filesystem.
 
     mkfifo /tmp/xobpipe
 
-Connect the named pipe to the standard input of an xob instance.
+Have xob consume new values as they arrive on the pipe.
 
     tail -f /tmp/xobpipe | xob
 
-After updating audio volume, backlight intensity, or whatever, to 43:
+Write values to the pipe when you deem it relevant. In the classic audio volume bar example, that would be after the user has pressed a button and you changed the volume (usually set up as a keybinding in your window manager or desktop environment).
 
-    echo 43 >> /tmp/xobpipe
+    command_that_outputs_a_value >> /tmp/xobpipe
 
-Adapt this use-case to your workflow (scripts, callbacks, or keybindings handled the window manager).
+To try it manually, issue a test value such as `echo 43 >> /tmp/xobpipe`.
 
 # FAQ
 

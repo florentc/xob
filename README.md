@@ -35,19 +35,7 @@ Launch xob in a terminal, enter a value (positive integer), press return. Suffix
 
 ### General case
 
-You may manage a bar for audio volume, backlight intensity, or whatever, using a named pipe. Create a named pipe, e.g. */tmp/xobpipe*, on your filesystem using
-
-    mkfifo /tmp/xobpipe
-
-Connect the named pipe to the standard input of an xob instance.
-
-    tail -f /tmp/xobpipe | xob
-
-Set up your environment so that after updating audio volume, backlight intensity, or whatever, to a new value like 43, it writes that value into the pipe:
-
-    echo 43 >> /tmp/xobpipe
-
-Adapt this use-case to your workflow (scripts, callbacks, or keybindings handled by the window manager).
+The ideal way to use xob is to have a program (see example scripts below) that listens to events (such as a change in audio volume levels) and issues new values on the standard output automatically. Launch `the_listener_program | xob` and everything works out of the box.
 
 ### Ready to use volume bar
 
@@ -136,6 +124,25 @@ except KeyboardInterrupt:
     observer.stop()
 observer.join()
 ```
+
+### Fallback method
+
+In case no input program fits your needs, you may trigger changes manually. Append new values in a named pipe (a pipe that persists as a special file on the filesystem) and have xob consume them as they arrive. **Warning!** This method should be considered as fallback: it is more cumbersome to set up and likely to miss changes you would like displayed on the bar.
+
+Create a named pipe, e.g. */tmp/xobpipe*, on your filesystem.
+
+    mkfifo /tmp/xobpipe
+
+Have xob consume new values as they arrive on the pipe.
+
+    tail -f /tmp/xobpipe | xob
+
+Write values to the pipe when you deem it relevant. In the classic audio volume bar example, that would be after the user has pressed a button and you changed the volume (usually set up as a keybinding in your window manager or desktop environment).
+
+    command_that_outputs_a_value >> /tmp/xobpipe
+
+To try it manually, issue a test value such as `echo 43 >> /tmp/xobpipe`.
+
 ## Appearance
 
 When starting, xob looks for the configuration file in the following order:
