@@ -37,6 +37,14 @@ typedef struct
 
 typedef struct
 {
+    Colors normal;
+    Colors overflow;
+    Colors alt;
+    Colors altoverflow;
+} Colorscheme;
+
+typedef struct
+{
     double rel;
     int abs;
 } Dim;
@@ -64,13 +72,7 @@ typedef struct
     int outline;
     Orientation orientation;
     Overflow_mode overflow;
-    struct
-    {
-        Colors normal;
-        Colors overflow;
-        Colors alt;
-        Colors altoverflow;
-    } color;
+    Colorscheme colorscheme;
 } Style;
 
 /* clang-format off */
@@ -96,7 +98,7 @@ typedef struct
         .outline = 3,\
         .orientation = VERTICAL,\
         .overflow = PROPORTIONAL,\
-        .color =\
+        .colorscheme =\
         {\
             .normal =\
             {\

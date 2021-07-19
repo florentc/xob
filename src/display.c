@@ -40,19 +40,19 @@ static int size_y(Geometry_context g)
     return g.orientation == HORIZONTAL ? g.thickness : g.length;
 }
 
-/* Draw an empty bar with the given border color */
-static void draw_empty(X_context x, Geometry_context g, Gc_colorset color)
+/* Draw an empty bar with the given colors */
+static void draw_empty(X_context x, Geometry_context g, Colors colors)
 {
     /* Outline */
-    fill_rectangle(x, color.bg, 0, 0,
+    fill_rectangle(x, colors.bg, 0, 0,
                    2 * (g.outline + g.border + g.padding) + size_x(g),
                    2 * (g.outline + g.border + g.padding) + size_y(g));
     /* Border */
-    fill_rectangle(x, color.border, g.outline, g.outline,
+    fill_rectangle(x, colors.border, g.outline, g.outline,
                    2 * (g.border + g.padding) + size_x(g),
                    2 * (g.border + g.padding) + size_y(g));
     /* Padding */
-    fill_rectangle(x, color.bg, g.outline + g.border, g.outline + g.border,
+    fill_rectangle(x, colors.bg, g.outline + g.border, g.outline + g.border,
                    2 * g.padding + size_x(g), 2 * g.padding + size_y(g));
 }
 
@@ -129,22 +129,6 @@ void compute_geometry(Style conf, Display_context *dc, int *topleft_x,
                  conf.y.abs;
 }
 
-void set_color_context_from_config(Display_context *dc, Style conf)
-{
-    dc->color.normal.fg = conf.color.normal.fg;
-    dc->color.normal.bg = conf.color.normal.bg;
-    dc->color.normal.border = conf.color.normal.border;
-    dc->color.overflow.fg = conf.color.overflow.fg;
-    dc->color.overflow.bg = conf.color.overflow.bg;
-    dc->color.overflow.border = conf.color.overflow.border;
-    dc->color.alt.fg = conf.color.alt.fg;
-    dc->color.alt.bg = conf.color.alt.bg;
-    dc->color.alt.border = conf.color.alt.border;
-    dc->color.altoverflow.fg = conf.color.altoverflow.fg;
-    dc->color.altoverflow.bg = conf.color.altoverflow.bg;
-    dc->color.altoverflow.border = conf.color.altoverflow.border;
-}
-
 /* PUBLIC Returns a new display context from a given configuration. If the
  * .x.display field of the returned display context is NULL, display could not
  * have been opened.*/
@@ -198,8 +182,8 @@ Display_context init(Style conf)
         /* The new window is not mapped yet */
         dc.x.mapped = False;
 
-        /* Color context */
-        set_color_context_from_config(&dc, conf);
+        /* Colorscheme */
+        dc.colorscheme = conf.colorscheme;
     }
 
     return dc;
@@ -217,8 +201,8 @@ Display_context show(Display_context dc, int value, int cap,
 {
     Display_context newdc = dc;
 
-    Gc_colorset colorset;
-    Gc_colorset colorset_overflow_proportional;
+    Colors colors;
+    Colors colors_overflow_proportional;
 
     if (!dc.x.mapped)
     {
@@ -230,37 +214,37 @@ Display_context show(Display_context dc, int value, int cap,
     switch (show_mode)
     {
     case NORMAL:
-        colorset_overflow_proportional = dc.color.normal;
+        colors_overflow_proportional = dc.colorscheme.normal;
         if (value <= cap)
-            colorset = dc.color.normal;
+            colors = dc.colorscheme.normal;
         else
-            colorset = dc.color.overflow;
+            colors = dc.colorscheme.overflow;
         break;
 
     case ALTERNATIVE:
-        colorset_overflow_proportional = dc.color.alt;
+        colors_overflow_proportional = dc.colorscheme.alt;
         if (value <= cap)
-            colorset = dc.color.alt;
+            colors = dc.colorscheme.alt;
         else
-            colorset = dc.color.altoverflow;
+            colors = dc.colorscheme.altoverflow;
         break;
     }
 
     /* Empty bar */
-    draw_empty(dc.x, dc.geometry, colorset);
+    draw_empty(dc.x, dc.geometry, colors);
 
     /* Content */
     draw_content(dc.x, dc.geometry,
-                 fit_in(value, 0, cap) * dc.geometry.length / cap, colorset.fg);
+                 fit_in(value, 0, cap) * dc.geometry.length / cap, colors.fg);
 
     /* Proportional overflow : draw separator */
     if (value > cap && overflow_mode == PROPORTIONAL &&
         cap * dc.geometry.length / value > dc.geometry.padding)
     {
         draw_content(dc.x, dc.geometry, cap * dc.geometry.length / value,
-                     colorset_overflow_proportional.fg);
+                     colors_overflow_proportional.fg);
         draw_separator(dc.x, dc.geometry, cap * dc.geometry.length / value,
-                       colorset.bg);
+                       colors.bg);
     }
 
     XFlush(dc.x.display);

@@ -258,13 +258,13 @@ Style parse_style_config(FILE *file, const char *stylename, Style default_style)
             if (color_config != NULL)
             {
                 config_setting_lookup_colors(color_config, "normal",
-                                             &style.color.normal);
+                                             &style.colorscheme.normal);
                 config_setting_lookup_colors(color_config, "overflow",
-                                             &style.color.overflow);
+                                             &style.colorscheme.overflow);
                 config_setting_lookup_colors(color_config, "alt",
-                                             &style.color.alt);
+                                             &style.colorscheme.alt);
                 config_setting_lookup_colors(color_config, "altoverflow",
-                                             &style.color.altoverflow);
+                                             &style.colorscheme.altoverflow);
             }
         }
         else

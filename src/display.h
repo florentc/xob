@@ -38,21 +38,6 @@ typedef struct
 
 typedef struct
 {
-    Color fg;
-    Color bg;
-    Color border;
-} Gc_colorset;
-
-typedef struct
-{
-    Gc_colorset normal;
-    Gc_colorset overflow;
-    Gc_colorset alt;
-    Gc_colorset altoverflow;
-} Color_context;
-
-typedef struct
-{
     int outline;
     int border;
     int padding;
@@ -64,7 +49,7 @@ typedef struct
 typedef struct
 {
     X_context x;
-    Color_context color;
+    Colorscheme colorscheme;
     Geometry_context geometry;
 } Display_context;
 
