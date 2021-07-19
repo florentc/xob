@@ -18,6 +18,7 @@
 #include "conf.h"
 #include <errno.h>
 #include <libconfig.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -81,7 +82,7 @@ static int config_setting_lookup_dim(const config_setting_t *setting,
     return success_status;
 }
 
-static inline _Bool color_spec_is_valid(const char *spec)
+static inline bool color_spec_is_valid(const char *spec)
 {
     if (spec[0] == '#' && (strlen(spec) == 7 || strlen(spec) == 9))
     {
