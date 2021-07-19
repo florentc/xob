@@ -17,7 +17,7 @@ This release mainly features support for transparency (contribution by Oliver Ha
 
 - xob now depends on `libxrender` for the new transparency feature (this can be optionally disabled when building xob).
 - Improved documentation of the named-pipe method.
-- The documentation encourages users to use dedicated input-program instead of the named-pipe method (now presented as a fallback method).
+- The documentation encourages users to use dedicated input programs instead of the named-pipe method (now presented as a fallback method).
 
 ### Fixed
 
