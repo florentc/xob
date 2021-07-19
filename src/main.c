@@ -1,5 +1,5 @@
 /* xob - A lightweight overlay volume/anything bar for the X Window System.
- * Copyright (C) 2020 Florent Ch.
+ * Copyright (C) 2021 Florent Ch.
  *
  * xob is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -169,17 +169,9 @@ int main(int argc, char *argv[])
     }
 
     /* Parsing the config file */
-    if (config_file == NULL)
-    {
-        fprintf(stderr, "Info: could not access any configuration file.\n");
-    }
-    else
-    {
-        printf("Info: reading configuration from %s.\n",
-                real_config_file_path);
-        style = parse_style_config(config_file, style_name, style);
-        fclose(config_file);
-    }
+    printf("Info: reading configuration from %s.\n", real_config_file_path);
+    style = parse_style_config(config_file, style_name, style);
+    fclose(config_file);
 
     /* Display */
     bool displayed = false;
@@ -239,6 +231,9 @@ int main(int argc, char *argv[])
                 break;
             }
         }
+
+        /* Clean the memory */
+        display_context_destroy(display_context);
     }
     return EXIT_SUCCESS;
 }

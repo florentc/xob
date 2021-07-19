@@ -9,10 +9,12 @@ A lightweight configurable overlay volume/backlight/progress/anything bar for th
 
 ## Installation
 
-xob depends on libx11 and libconfig.
+xob depends on libx11, libxrender (for optional transparency support) and libconfig.
 
     make
     make install
+
+To build xob without transparency support and rely only on libx11 and libconfig: `make enable_alpha=no`.
 
 Packages are available in the following repositories:
 
@@ -160,22 +162,22 @@ Consult the man page for detailed information about the configuration file and t
         color = {
             normal = {
                 fg     = "#ffffff";
-                bg     = "#000000";
+                bg     = "#00000090";
                 border = "#ffffff";
             };
             alt = {
                 fg     = "#555555";
-                bg     = "#000000";
+                bg     = "#00000090";
                 border = "#555555";
             };
             overflow = {
                 fg     = "#ff0000";
-                bg     = "#000000";
+                bg     = "#00000090";
                 border = "#ff0000";
             };
             altoverflow = {
                 fg     = "#550000";
-                bg     = "#000000";
+                bg     = "#00000090";
                 border = "#550000";
             };
         };
@@ -212,7 +214,7 @@ The values for thickness, padding, border, and outline are a number of pixels.
 
 ![Colors guide](/doc/img/colors.svg)
 
-There are three colors: foreground, background, and border. They change depending on the displayed value. Also, there are two ways to display overflows: use the overflow color with no feedback on how much it overflows ("hidden" mode), or use the overflow color on part on the bar only proportionally to how much the value overflows ("proportional" mode).
+There are three colors: foreground, background, and border. They change depending on the displayed value. Also, there are two ways to display overflows: use the overflow color with no feedback on how much it overflows ("hidden" mode), or use the overflow color on part of the bar only proportionally to how much the value overflows ("proportional" mode).
 
 Illustration | Display mode       | Overflow type
 ------------ | ------------------ | -------------

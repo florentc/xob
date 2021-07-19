@@ -1,5 +1,5 @@
 /* xob - A lightweight overlay volume/anything bar for the X Window System.
- * Copyright (C) 2020 Florent Ch.
+ * Copyright (C) 2021 Florent Ch.
  *
  * xob is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,10 +22,26 @@
 
 typedef struct
 {
-    const char *fg;
-    const char *bg;
-    const char *border;
-} Colorspec;
+    unsigned char red;
+    unsigned char green;
+    unsigned char blue;
+    unsigned char alpha;
+} Color;
+
+typedef struct
+{
+    Color fg;
+    Color bg;
+    Color border;
+} Colors;
+
+typedef struct
+{
+    Colors normal;
+    Colors overflow;
+    Colors alt;
+    Colors altoverflow;
+} Colorscheme;
 
 typedef struct
 {
@@ -56,13 +72,7 @@ typedef struct
     int outline;
     Orientation orientation;
     Overflow_mode overflow;
-    struct
-    {
-        Colorspec normal;
-        Colorspec overflow;
-        Colorspec alt;
-        Colorspec altoverflow;
-    } color;
+    Colorscheme colorscheme;
 } Style;
 
 /* clang-format off */
@@ -88,31 +98,103 @@ typedef struct
         .outline = 3,\
         .orientation = VERTICAL,\
         .overflow = PROPORTIONAL,\
-        .color =\
+        .colorscheme =\
         {\
             .normal =\
             {\
-                .fg     = "#ffffff",\
-                .bg     = "#000000",\
-                .border = "#ffffff"\
+                .fg = \
+                { \
+                    .red   = 0xff,\
+                    .green = 0xff,\
+                    .blue  = 0xff,\
+                    .alpha = 0xff\
+                },\
+                .bg = \
+                { \
+                    .red   = 0x00,\
+                    .green = 0x00,\
+                    .blue  = 0x00,\
+                    .alpha = 0x90\
+                },\
+                .border = \
+                { \
+                    .red   = 0xff,\
+                    .green = 0xff,\
+                    .blue  = 0xff,\
+                    .alpha = 0xff\
+                }\
             },\
             .overflow =\
             {\
-                .fg     = "#ff0000",\
-                .bg     = "#000000",\
-                .border = "#ff0000"\
+                .fg = \
+                { \
+                    .red   = 0xff,\
+                    .green = 0x00,\
+                    .blue  = 0x00,\
+                    .alpha = 0xff\
+                },\
+                .bg = \
+                { \
+                    .red   = 0x00,\
+                    .green = 0x00,\
+                    .blue  = 0x00,\
+                    .alpha = 0x90\
+                },\
+                .border = \
+                { \
+                    .red   = 0xff,\
+                    .green = 0x00,\
+                    .blue  = 0x00,\
+                    .alpha = 0xff\
+                }\
             },\
             .alt =\
             {\
-                .fg     = "#555555",\
-                .bg     = "#000000",\
-                .border = "#555555"\
+                .fg = \
+                { \
+                    .red   = 0x55,\
+                    .green = 0x55,\
+                    .blue  = 0x55,\
+                    .alpha = 0xff\
+                },\
+                .bg = \
+                { \
+                    .red   = 0x00,\
+                    .green = 0x00,\
+                    .blue  = 0x00,\
+                    .alpha = 0x90\
+                },\
+                .border = \
+                { \
+                    .red   = 0x55,\
+                    .green = 0x55,\
+                    .blue  = 0x55,\
+                    .alpha = 0xff\
+                }\
             },\
             .altoverflow =\
             {\
-                .fg     = "#550000",\
-                .bg     = "#000000",\
-                .border = "#550000"\
+                .fg = \
+                { \
+                    .red   = 0x55,\
+                    .green = 0x00,\
+                    .blue  = 0x00,\
+                    .alpha = 0xff\
+                },\
+                .bg = \
+                { \
+                    .red   = 0x00,\
+                    .green = 0x00,\
+                    .blue  = 0x00,\
+                    .alpha = 0x90\
+                },\
+                .border = \
+                { \
+                    .red   = 0x55,\
+                    .green = 0x00,\
+                    .blue  = 0x00,\
+                    .alpha = 0xff\
+                }\
             }\
         }\
     }

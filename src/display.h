@@ -1,5 +1,5 @@
 /* xob - A lightweight overlay volume/anything bar for the X Window System.
- * Copyright (C) 2020 Florent Ch.
+ * Copyright (C) 2021 Florent Ch.
  *
  * xob is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,7 +19,6 @@
 #define DISPLAY_H
 
 #include "conf.h"
-
 #include <X11/Xlib.h>
 
 typedef enum
@@ -39,21 +38,6 @@ typedef struct
 
 typedef struct
 {
-    GC fg;
-    GC bg;
-    GC border;
-} Gc_colorset;
-
-typedef struct
-{
-    Gc_colorset normal;
-    Gc_colorset overflow;
-    Gc_colorset alt;
-    Gc_colorset altoverflow;
-} Color_context;
-
-typedef struct
-{
     int outline;
     int border;
     int padding;
@@ -65,7 +49,7 @@ typedef struct
 typedef struct
 {
     X_context x;
-    Color_context color;
+    Colorscheme colorscheme;
     Geometry_context geometry;
 } Display_context;
 
@@ -73,5 +57,12 @@ Display_context init(Style conf);
 Display_context show(Display_context dc, int value, int cap,
                      Overflow_mode overflow_mode, Show_mode show_mode);
 Display_context hide(Display_context dc);
+void display_context_destroy(Display_context dc);
+
+/* Draw a rectangle with the given size, position and color */
+void fill_rectangle(X_context xc, Color c, int x, int y, unsigned int w,
+                    unsigned int h);
+
+Depth get_display_context_depth(Display_context dc);
 
 #endif /* __DISPLAY_H__ */
