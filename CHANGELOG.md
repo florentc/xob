@@ -2,6 +2,29 @@
 
 This file recaps changes between releases.
 
+## [0.3] - 2021-07-19
+
+This release mainly features support for transparency (contribution by Oliver Hattshire @Hattshire) in color specifications along with improvements to the pulseaudio watcher script provided in the documentation.
+
+### Added
+
+- Support for transparency: color specification can now contain a value for the alpha channel.
+- Automatic default sink index detection in the example pulseaudio watcher script. This should make the script work out of the box for most users.
+- Ready to use screen brightness watcher script in the `README`.
+- Quiet mode (`-q`).
+
+### Changed
+
+- xob now depends on `libxrender` for the new transparency feature (this can be optionally disabled when building xob).
+- Improved documentation of the named-pipe method.
+- The documentation encourages users to use dedicated input-program instead of the named-pipe method (now presented as a fallback method).
+
+### Fixed
+
+- Documentation used to advise to overwrite the content of named pipes which could lead to premature file endings. The documentation now recommends to append new values `command >> named_pipe`.
+- Issue in the pulseaudio watcher script where pulseaudio sink indexes were abusively used as indexes of the internal `pulsectl` library's data structures.
+
+
 ## [0.2] - 2020-03-09
 
 This release introduces more precise timeout specification (mind the new unit for `-t`) and an orientation option. This option makes it possible to chose between a new vertical style or the classic horizontal style.

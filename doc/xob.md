@@ -1,4 +1,4 @@
-% XOB(1) xob 0.2 | xob Manual
+% XOB(1) xob 0.3 | xob Manual
 % Florent Ch
 % July 2021
 
