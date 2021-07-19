@@ -236,11 +236,6 @@ There is no support for panel integration. You can however use absolute position
 
 xob works well under multihead setups but there is no easy way to configure the position of the bar for now. For example, in a dual monitor setup with the default configuration, the horizontal centering is not local to one of the two monitors. It is global. The bar might be split in two: one part on each screen. Stick to a corner or use absolute positioning. If you want an xob instance to be centered (horizontally) on the far-right monitor, set *x.relative* to 1.0 (anchored on the far right) and the *x.offset* to minus half the width of that screen.
 
-# PLANNED FEATURES
+# CONTRIBUTIONS
 
-* Multihead-friendly configuration.
-* New overflow styles.
-* Smooth transitions.
-* Configuration through X resources.
-
-Contributions and critics are welcome.
+Feedback and contributions are welcome.

@@ -316,13 +316,6 @@ xob works well under multihead setups. The `x`, `y`, and `length` style options 
         orientation = "horizontal";
     };
 
-## Planned features
-
-* Multihead-friendly configuration.
-* New overflow styles.
-* Smooth transitions.
-* Configuration through X resources.
-
 ## License
 
 GPL3, see [LICENSE](/LICENSE).
