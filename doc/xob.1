@@ -50,6 +50,50 @@ By default: see below.
 \f[B]-q\f[R]
 Specifies whether to suppress all normal output.
 By default: not suppressed
+.SH USAGE
+.SS GENERAL CASE
+.PP
+Use a program that listens to events (such as a change in audio volume
+levels) and issues new values on the standard output automatically.
+Launch \f[C]the_listener_program | xob\f[R].
+Ready to use input programs for audio volume and screen backlight are
+available on the xob project homepage: https://github.com/florentc/xob
+.SS FALLBACK METHOD
+.PP
+In case no input program fits your needs, you may trigger changes
+manually.
+Append new values in a named pipe (a pipe that persists as a special
+file on the filesystem) and have xob consume them as they arrive.
+.PP
+Create a named pipe, e.g.\ \f[I]/tmp/xobpipe\f[R], on your filesystem.
+.IP
+.nf
+\f[C]
+mkfifo /tmp/xobpipe
+\f[R]
+.fi
+.PP
+Have xob consume new values as they arrive on the pipe.
+.IP
+.nf
+\f[C]
+tail -f /tmp/xobpipe | xob
+\f[R]
+.fi
+.PP
+Write values to the pipe when you deem it relevant.
+In the classic audio volume bar example, that would be after the user
+has pressed a button and you changed the volume (usually set up as a
+keybinding in your window manager or desktop environment).
+.IP
+.nf
+\f[C]
+command_that_outputs_a_value >> /tmp/xobpipe
+\f[R]
+.fi
+.PP
+To try it manually, issue a test value such as
+\f[C]echo 43 >> /tmp/xobpipe\f[R].
 .SH CONFIGURATION FILE
 .PP
 The configuration file only specifies styles (appearances) for the bar.
@@ -293,49 +337,6 @@ default = {
 };
 \f[R]
 .fi
-.SH GENERAL USE CASE
-.PP
-Use a program that listens to events (such as a change in audio volume
-levels) and issues new values on the standard output automatically.
-Launch \f[C]the_listener_program | xob\f[R].
-Ready to use input programs for audio volume and screen backlight are
-available on the xob project homepage: https://github.com/florentc/xob
-.SS FALLBACK METHOD
-.PP
-In case no input program fits your needs, you may trigger changes
-manually.
-Append new values in a named pipe (a pipe that persists as a special
-file on the filesystem) and have xob consume them as they arrive.
-.PP
-Create a named pipe, e.g.\ \f[I]/tmp/xobpipe\f[R], on your filesystem.
-.IP
-.nf
-\f[C]
-mkfifo /tmp/xobpipe
-\f[R]
-.fi
-.PP
-Have xob consume new values as they arrive on the pipe.
-.IP
-.nf
-\f[C]
-tail -f /tmp/xobpipe | xob
-\f[R]
-.fi
-.PP
-Write values to the pipe when you deem it relevant.
-In the classic audio volume bar example, that would be after the user
-has pressed a button and you changed the volume (usually set up as a
-keybinding in your window manager or desktop environment).
-.IP
-.nf
-\f[C]
-command_that_outputs_a_value >> /tmp/xobpipe
-\f[R]
-.fi
-.PP
-To try it manually, issue a test value such as
-\f[C]echo 43 >> /tmp/xobpipe\f[R].
 .SH FAQ
 .RS
 .PP

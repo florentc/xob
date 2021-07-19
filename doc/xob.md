@@ -31,6 +31,30 @@ xob - A lightweight overlay volume/backlight/progress/anything bar for the X Win
 **-q**
 :   Specifies whether to suppress all normal output. By default: not suppressed
 
+# USAGE
+
+## GENERAL CASE
+
+Use a program that listens to events (such as a change in audio volume levels) and issues new values on the standard output automatically. Launch `the_listener_program | xob`. Ready to use input programs for audio volume and screen backlight are available on the xob project homepage: https://github.com/florentc/xob
+
+## FALLBACK METHOD
+
+In case no input program fits your needs, you may trigger changes manually. Append new values in a named pipe (a pipe that persists as a special file on the filesystem) and have xob consume them as they arrive.
+
+Create a named pipe, e.g. */tmp/xobpipe*, on your filesystem.
+
+    mkfifo /tmp/xobpipe
+
+Have xob consume new values as they arrive on the pipe.
+
+    tail -f /tmp/xobpipe | xob
+
+Write values to the pipe when you deem it relevant. In the classic audio volume bar example, that would be after the user has pressed a button and you changed the volume (usually set up as a keybinding in your window manager or desktop environment).
+
+    command_that_outputs_a_value >> /tmp/xobpipe
+
+To try it manually, issue a test value such as `echo 43 >> /tmp/xobpipe`.
+
 # CONFIGURATION FILE
 
 The configuration file only specifies styles (appearances) for the bar. The maximum value and timeout are set by **-m** and **-t**. When starting, xob looks for the configuration file in the following order:
@@ -204,28 +228,6 @@ This example configuration file provides two styles "volume" and "backlight". In
             };
         };
     };
-
-# GENERAL USE CASE
-
-Use a program that listens to events (such as a change in audio volume levels) and issues new values on the standard output automatically. Launch `the_listener_program | xob`. Ready to use input programs for audio volume and screen backlight are available on the xob project homepage: https://github.com/florentc/xob
-
-## FALLBACK METHOD
-
-In case no input program fits your needs, you may trigger changes manually. Append new values in a named pipe (a pipe that persists as a special file on the filesystem) and have xob consume them as they arrive.
-
-Create a named pipe, e.g. */tmp/xobpipe*, on your filesystem.
-
-    mkfifo /tmp/xobpipe
-
-Have xob consume new values as they arrive on the pipe.
-
-    tail -f /tmp/xobpipe | xob
-
-Write values to the pipe when you deem it relevant. In the classic audio volume bar example, that would be after the user has pressed a button and you changed the volume (usually set up as a keybinding in your window manager or desktop environment).
-
-    command_that_outputs_a_value >> /tmp/xobpipe
-
-To try it manually, issue a test value such as `echo 43 >> /tmp/xobpipe`.
 
 # FAQ
 
