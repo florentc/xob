@@ -44,7 +44,7 @@ static int size_y(Geometry_context g)
 static void draw_empty(X_context x, Geometry_context g, Colors colors)
 {
     /* Outline */
-    fill_rectangle(x, colors.bg, 0, 0,
+    fill_rectangle(x, colors.outline, 0, 0,
                    2 * (g.outline + g.border + g.padding) + size_x(g),
                    2 * (g.outline + g.border + g.padding) + size_y(g));
     /* Border */
@@ -52,7 +52,7 @@ static void draw_empty(X_context x, Geometry_context g, Colors colors)
                    2 * (g.border + g.padding) + size_x(g),
                    2 * (g.border + g.padding) + size_y(g));
     /* Padding */
-    fill_rectangle(x, colors.bg, g.outline + g.border, g.outline + g.border,
+    fill_rectangle(x, colors.padding, g.outline + g.border, g.outline + g.border,
                    2 * g.padding + size_x(g), 2 * g.padding + size_y(g));
 }
 
