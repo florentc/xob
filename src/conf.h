@@ -33,6 +33,8 @@ typedef struct
     Color fg;
     Color bg;
     Color border;
+    Color padding;
+    Color outline;
 } Colors;
 
 typedef struct
@@ -122,6 +124,20 @@ typedef struct
                     .green = 0xff,\
                     .blue  = 0xff,\
                     .alpha = 0xff\
+                },\
+                .padding = \
+                { \
+                    .red   = 0x00,\
+                    .green = 0x00,\
+                    .blue  = 0x00,\
+                    .alpha = 0x90\
+                },\
+                .outline = \
+                { \
+                    .red   = 0x00,\
+                    .green = 0x00,\
+                    .blue  = 0x00,\
+                    .alpha = 0x90\
                 }\
             },\
             .overflow =\
@@ -146,6 +162,20 @@ typedef struct
                     .green = 0x00,\
                     .blue  = 0x00,\
                     .alpha = 0xff\
+                },\
+                .padding = \
+                { \
+                    .red   = 0x00,\
+                    .green = 0x00,\
+                    .blue  = 0x00,\
+                    .alpha = 0x90\
+                },\
+                .outline = \
+                { \
+                    .red   = 0x00,\
+                    .green = 0x00,\
+                    .blue  = 0x00,\
+                    .alpha = 0x90\
                 }\
             },\
             .alt =\
@@ -170,6 +200,20 @@ typedef struct
                     .green = 0x55,\
                     .blue  = 0x55,\
                     .alpha = 0xff\
+                },\
+                .padding = \
+                { \
+                    .red   = 0x00,\
+                    .green = 0x00,\
+                    .blue  = 0x00,\
+                    .alpha = 0x90\
+                },\
+                .outline = \
+                { \
+                    .red   = 0x00,\
+                    .green = 0x00,\
+                    .blue  = 0x00,\
+                    .alpha = 0x90\
                 }\
             },\
             .altoverflow =\
@@ -194,6 +238,20 @@ typedef struct
                     .green = 0x00,\
                     .blue  = 0x00,\
                     .alpha = 0xff\
+                },\
+                .padding = \
+                { \
+                    .red   = 0x00,\
+                    .green = 0x00,\
+                    .blue  = 0x00,\
+                    .alpha = 0x90\
+                },\
+                .outline = \
+                { \
+                    .red   = 0x00,\
+                    .green = 0x00,\
+                    .blue  = 0x00,\
+                    .alpha = 0x90\
                 }\
             }\
         }\

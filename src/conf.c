@@ -159,7 +159,11 @@ static int config_setting_lookup_colors(const config_setting_t *setting,
                          config_setting_lookup_color(colorspec_setting, "bg",
                                                      &(value->bg)) &&
                          config_setting_lookup_color(
-                             colorspec_setting, "border", &(value->border));
+                             colorspec_setting, "border", &(value->border)) &&
+                         config_setting_lookup_color(
+                             colorspec_setting, "padding", &(value->padding)) &&
+                         config_setting_lookup_color(
+                             colorspec_setting, "outline", &(value->outline));
     }
 
     return success_status;
