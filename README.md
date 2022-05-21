@@ -83,7 +83,17 @@ with Pulse() as pulse:
     print(f"ERROR: {e}", file=sys.stderr)
 ```
 
-This script listens to volume and mute events. No matter how the volume changes (keybindings, pulse control panel, headphones plugged-in), it will instantly show up the volume bar. It should work out of the box but you can optionally pass the index of a sink on the command line, as given by `pacmd list-sinks`.
+This script listens to volume and mute events. No matter how the volume changes (keybindings, pulse control panel, headphones plugged-in), it will instantly show up the volume bar. It should work out of the box but you can optionally pass the index of a sink on the command line, as given by `pacmd list-sinks`. Also you can use the shell-script instead: `./volume | xob`
+```sh
+#!/bin/sh
+mute=$(pactl get-sink-mute $(pactl get-default-sink) | cut -d ':' -f2 | tr -d ' ')
+bang=''
+[[ ${mute} = "yes" ]] && bang='!'
+
+vol=$(pactl get-sink-volume $(pactl get-default-sink) | awk '/%/{print $5}' | tr -d '%')
+echo "${vol}${bang}"
+sleep 1
+```
 
 ### Ready to use brightness bar
 

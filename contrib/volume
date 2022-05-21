@@ -1,0 +1,8 @@
+#!/bin/sh
+mute=$(pactl get-sink-mute $(pactl get-default-sink) | cut -d ':' -f2 | tr -d ' ')
+bang=''
+[[ ${mute} = "yes" ]] && bang='!'
+
+vol=$(pactl get-sink-volume $(pactl get-default-sink) | awk '/%/{print $5}' | tr -d '%')
+echo "${vol}${bang}"
+sleep 1
