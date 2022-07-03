@@ -104,6 +104,9 @@ Options can be grouped together inside curly brackets. Some options expect a gro
 
 In the following, a dot "." means "suboption". For instance "color.normal.fg" means "The suboption fg of the suboption normal of option color".
 
+**monitor** "output_name" (default: auto)
+:   Output monitor for the bar, use `xrandr` command to get monitors names. The option is case-sensitive.
+
 **orientation** *"horizontal" | "vertical"* (default: vertical)
 :   Orientation of the bar which either fills up from left to right ("horizontal") or bottom to top ("vertical").
 
@@ -194,6 +197,7 @@ This example configuration file provides two styles "volume" and "backlight". In
 ## DEFAULT CONFIGURATION FILE
 
     default = {
+        monitor   = "auto";
         x         = {relative = 1; offset = -48;};
         y         = {relative = 0.5; offset = 0;};
         length    = {relative = 0.3; offset = 0;};
@@ -242,7 +246,7 @@ There is no support for panel integration. You can however use absolute position
 
 > "How to set up xob with multiple monitors?"
 
-xob works well under multihead setups but there is no easy way to configure the position of the bar for now. For example, in a dual monitor setup with the default configuration, the horizontal centering is not local to one of the two monitors. It is global. The bar might be split in two: one part on each screen. Stick to a corner or use absolute positioning. If you want an xob instance to be centered (horizontally) on the far-right monitor, set *x.relative* to 1.0 (anchored on the far right) and the *x.offset* to minus half the width of that screen.
+xob works well under multihead setups, use option `monitor` to specify one. By default xob use `auto` for the option. It means that in a dual monitor setup with the default configuration, the horizontal centering is not local to one of the two monitors. It is global. The bar might be split in two: one part on each screen. If you want an xob instance to be centered (horizontally) on the specific monitor, set `monitor` option to your monitor output, for example `monitor = "HDMI-1"` and set options `x.relative` and `y.relative` relative to the monitor. To get monitors output name you can use `xrandr --listmonitors` command int your terminal.
 
 # CONTRIBUTIONS
 
