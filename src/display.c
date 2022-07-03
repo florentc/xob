@@ -108,8 +108,8 @@ void compute_geometry(Style conf, Display_context *dc, int *topleft_x,
 
     /* Orientation-related dimensions */
     *available_length = dc->geometry.orientation == HORIZONTAL
-                            ? WidthOfScreen(dc->x.screen)
-                            : HeightOfScreen(dc->x.screen);
+                            ? dc->x.monitor_info.width
+                            : dc->x.monitor_info.height;
 
     dc->geometry.length =
         fit_in(*available_length * conf.length.rel + conf.length.abs, 0,
@@ -177,7 +177,7 @@ Display_context init(Style conf)
             }
             if (i == num_monitors) // Monitor name is not found
             {
-                /* Use auto for monitor option if no monitor with
+                /* Use auto for monitor option if no monitors with
                  * provided name found*/
                 fprintf(stderr, "Monitor %s is not found. Use FULL mode\n",
                         monitor_name);
