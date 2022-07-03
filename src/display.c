@@ -19,6 +19,7 @@
 
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
+#include <X11/extensions/Xrandr.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -115,18 +116,18 @@ void compute_geometry(Style conf, Display_context *dc, int *topleft_x,
                *available_length - 2 * *fat_layer);
 
     /* Compute position of the top-left corner */
-    *topleft_x = fit_in(WidthOfScreen(dc->x.screen) * conf.x.rel -
+    *topleft_x = fit_in(dc->x.monitor_info.width * conf.x.rel -
                             (size_x(dc->geometry) + 2 * *fat_layer) / 2,
                         0,
-                        WidthOfScreen(dc->x.screen) -
+                        dc->x.monitor_info.width -
                             (size_x(dc->geometry) + 2 * *fat_layer)) +
-                 conf.x.abs;
-    *topleft_y = fit_in(HeightOfScreen(dc->x.screen) * conf.y.rel -
+                 conf.x.abs + dc->x.monitor_info.x;
+    *topleft_y = fit_in(dc->x.monitor_info.height * conf.y.rel -
                             (size_y(dc->geometry) + 2 * *fat_layer) / 2,
                         0,
-                        HeightOfScreen(dc->x.screen) -
+                        dc->x.monitor_info.width -
                             (size_y(dc->geometry) + 2 * *fat_layer)) +
-                 conf.y.abs;
+                 conf.y.abs + dc->x.monitor_info.y;
 }
 
 /* PUBLIC Returns a new display context from a given configuration. If the
@@ -158,6 +159,40 @@ Display_context init(Style conf)
             XCreateColormap(dc.x.display, root, dc_depth.visuals, AllocNone);
         window_attributes.border_pixel = 0;
         window_attributes.override_redirect = True;
+
+        /* Get monitors info */
+        char *hard_monitor = "eDP-1";
+        int num_monitors;
+        char *monitor_name;
+        XRRMonitorInfo *monitor_sizes = XRRGetMonitors(
+                dc.x.display, root, 0, &num_monitors);
+        int i;
+        for (i = 0; i < num_monitors; i++)
+        {
+            monitor_name = XGetAtomName(dc.x.display, monitor_sizes[i].name);
+            if (strcmp(hard_monitor, monitor_name) == 0)
+                break;
+        }
+        if (i == num_monitors)
+        {
+            /* Fallback monitor if no monitor with provided name found*/
+            fprintf(stderr, "Monitor %s is not found. Use FULL mode\n",
+                    monitor_name);
+            dc.x.monitor_info.x = 0;
+            dc.x.monitor_info.y = 0;
+            dc.x.monitor_info.width = WidthOfScreen(dc.x.screen);
+            dc.x.monitor_info.height = HeightOfScreen(dc.x.screen);
+            strcpy(dc.x.monitor_info.name, "FULL");
+        }
+        else
+        {
+            dc.x.monitor_info.x = monitor_sizes[i].x;
+            dc.x.monitor_info.y = monitor_sizes[i].y;
+            dc.x.monitor_info.width = monitor_sizes[i].width;
+            dc.x.monitor_info.height = monitor_sizes[i].height;
+            strcpy(dc.x.monitor_info.name, monitor_name);
+        }
+        XRRFreeMonitors(monitor_sizes);
 
         compute_geometry(conf, &dc, &topleft_x, &topleft_y, &fat_layer,
                          &available_length);
