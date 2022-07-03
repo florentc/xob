@@ -20,6 +20,9 @@
 
 #include <stdio.h>
 
+#define MONITOR_AUTO "auto"
+#define LNAME_MONITOR 12
+
 typedef struct
 {
     unsigned char red;
@@ -63,6 +66,7 @@ typedef enum
 
 typedef struct
 {
+    char monitor[LNAME_MONITOR];
     Dim x;
     Dim y;
     Dim length;
@@ -77,6 +81,7 @@ typedef struct
 
 /* clang-format off */
 #define DEFAULT_CONFIGURATION (Style) {\
+        .monitor = MONITOR_AUTO,\
         .x =\
         {\
             .rel = 1.0,\
