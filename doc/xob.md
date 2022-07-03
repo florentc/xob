@@ -246,7 +246,7 @@ There is no support for panel integration. You can however use absolute position
 
 > "How to set up xob with multiple monitors?"
 
-xob works well under multihead setups, use option `monitor` to specify one. By default xob use `auto` for the option. It means that in a dual monitor setup with the default configuration, the horizontal centering is not local to one of the two monitors. It is global. The bar might be split in two: one part on each screen. If you want an xob instance to be centered (horizontally) on the specific monitor, set `monitor` option to your monitor output, for example `monitor = "HDMI-1"` and set options `x.relative` and `y.relative` relative to the monitor. To get monitors output name you can use `xrandr --listmonitors` command int your terminal.
+xob works well under multihead setups, use option `monitor` to specify one. By default xob use `auto` for the option. It means that in a dual monitor setup with the default configuration, the horizontal centering is not local to one of the two monitors. It is global. The bar might be split in two: one part on each screen. If you want an xob instance to be centered (horizontally) on the specific monitor, set `monitor` option to your monitor output, for example `monitor = "HDMI-1"` and set options `x.relative` and `y.relative` relative to the monitor. To get monitors output name you can use `xrandr --listmonitors` command in your terminal.
 
 # CONTRIBUTIONS
 
