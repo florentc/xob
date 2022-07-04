@@ -20,7 +20,7 @@
 
 #include <stdio.h>
 
-#define MONITOR_AUTO "auto"
+#define MONITOR_COMBINED "combined"
 #define LNAME_MONITOR 12
 
 typedef struct
@@ -81,7 +81,7 @@ typedef struct
 
 /* clang-format off */
 #define DEFAULT_CONFIGURATION (Style) {\
-        .monitor = MONITOR_AUTO,\
+        .monitor = MONITOR_COMBINED,\
         .x =\
         {\
             .rel = 1.0,\

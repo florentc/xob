@@ -160,7 +160,7 @@ Display_context init(Style conf)
         window_attributes.border_pixel = 0;
         window_attributes.override_redirect = True;
 
-        if (strcmp(conf.monitor, MONITOR_AUTO) != 0)
+        if (strcmp(conf.monitor, MONITOR_COMBINED) != 0)
         {
             /* Get monitors info */
             int num_monitors;
@@ -177,15 +177,16 @@ Display_context init(Style conf)
             }
             if (i == num_monitors) // Monitor name is not found
             {
-                /* Use auto for monitor option if no monitors with
+                /* Use combined for monitor option if no monitors with
                  * provided name found*/
-                fprintf(stderr, "Monitor %s is not found. Use FULL mode\n",
-                        monitor_name);
+                fprintf(stderr, "Error: monitor %s is not found.\n",
+                        conf.monitor);
+                fprintf(stderr, "Info: falling back to combined mode.\n");
                 dc.x.monitor_info.x = 0;
                 dc.x.monitor_info.y = 0;
                 dc.x.monitor_info.width = WidthOfScreen(dc.x.screen);
                 dc.x.monitor_info.height = HeightOfScreen(dc.x.screen);
-                strcpy(dc.x.monitor_info.name, MONITOR_AUTO);
+                strcpy(dc.x.monitor_info.name, MONITOR_COMBINED);
             }
             else
             {
@@ -203,7 +204,7 @@ Display_context init(Style conf)
             dc.x.monitor_info.y = 0;
             dc.x.monitor_info.width = WidthOfScreen(dc.x.screen);
             dc.x.monitor_info.height = HeightOfScreen(dc.x.screen);
-            strcpy(dc.x.monitor_info.name, MONITOR_AUTO);
+            strcpy(dc.x.monitor_info.name, MONITOR_COMBINED);
         }
 
         compute_geometry(conf, &dc, &topleft_x, &topleft_y, &fat_layer,

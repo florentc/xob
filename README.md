@@ -155,7 +155,7 @@ When starting, xob looks for the configuration file in the following order:
 Consult the man page for detailed information about the configuration file and the available options. The following `styles.cfg` defines a single style called "default" that showcases all the possible options set to the default values. The configuration file may contain additional styles to choose among using the **-s** argument.
 
     default = {
-        monitor   = "auto";
+        monitor   = "combined";
         x         = {relative = 1; offset = -48;};
         y         = {relative = 0.5; offset = 0;};
         length    = {relative = 0.3; offset = 0;};
@@ -319,7 +319,7 @@ There is no support for panel integration. You can however use absolute position
 xob works well under multihead setups. The default orientation of bar is `vertical` and is positioned at the right edge of the screen surface. By default, `x`, `y`, and `length` style options refer to the combined screen surface, but you can specify a monitor for the bar, for example you can set option `monitor = "HDMI-1"` to show the bar only on `HDMI-1` (use `xrandr` command to get monitors names). In vertical layouts, you may prefer to switch the bar to horizontal mode as follows to avoid splits.
 
     horizontal = {
-        monitor   = "auto";
+        monitor   = "combined";
         x         = {relative = 0.5; offset = 0;};
         y         = {relative = 1; offset = -48;};
         orientation = "horizontal";

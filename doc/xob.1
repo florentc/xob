@@ -169,7 +169,7 @@ In the following, a dot \[lq].\[rq] means \[lq]suboption\[rq].
 For instance \[lq]color.normal.fg\[rq] means \[lq]The suboption fg of
 the suboption normal of option color\[rq].
 .TP
-\f[B]monitor\f[R] \f[I]\[lq]output_name\[rq]\f[R] (default: auto)
+\f[B]monitor\f[R] \f[I]\[lq]output_name\[rq]\f[R] (default: combined)
 Output monitor for the bar, use \f[I]xrandr\f[R] command to get monitors names.
 The option is case-sensitive.
 .TP
@@ -305,7 +305,7 @@ backlight = {
 .nf
 \f[C]
 default = {
-    monitor   = \[dq]auto\[dq];
+    monitor   = \[dq]combined\[dq];
     x         = {relative = 1; offset = -48;};
     y         = {relative = 0.5; offset = 0;};
     length    = {relative = 0.3; offset = 0;};
@@ -373,7 +373,7 @@ situations.
 .RE
 .PP
 xob works well under multihead setups, use option \f[I]monitor\f[R] to
-specify one. By default xob use \f[I]auto\f[R] for the option. It means
+specify one. By default xob use \f[I]combined\f[R] for the option. It means
 that in a dual monitor setup with the default configuration,
 the horizontal centering is not local to one of the two monitors.
 It is global. The bar might be split in two: one part on each screen.
