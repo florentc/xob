@@ -54,6 +54,10 @@ typedef struct
     Bool mapped;
     MonitorInfo monitor_info;
     Bar_position bar_position;
+    double x_rel;
+    int x_abs;
+    double y_rel;
+    int y_abs;
 } X_context;
 
 typedef struct
