@@ -125,7 +125,7 @@ void compute_geometry(Style conf, Display_context *dc, int *topleft_x,
     *topleft_y = fit_in(dc->x.monitor_info.height * conf.y.rel -
                             (size_y(dc->geometry) + 2 * *fat_layer) / 2,
                         0,
-                        dc->x.monitor_info.width -
+                        dc->x.monitor_info.height -
                             (size_y(dc->geometry) + 2 * *fat_layer)) +
                  conf.y.abs + dc->x.monitor_info.y;
 }
