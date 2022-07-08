@@ -130,6 +130,57 @@ void compute_geometry(Style conf, Display_context *dc, int *topleft_x,
                  conf.y.abs + dc->x.monitor_info.y;
 }
 
+/* Set combined positon */
+static void set_combined_position(Display_context * pdc)
+{
+    pdc->x.monitor_info.x = 0;
+    pdc->x.monitor_info.y = 0;
+    pdc->x.monitor_info.width = WidthOfScreen(pdc->x.screen);
+    pdc->x.monitor_info.height = HeightOfScreen(pdc->x.screen);
+    // strcpy(pdc->x.monitor_info.name, MONITOR_COMBINED);
+}
+
+/* Set specified monitor */
+static void set_specified_position(Display_context * pdc, const Style * pconf)
+{
+    Window root = RootWindow(pdc->x.display, pdc->x.screen_number);
+
+    /* Get monitors info */
+    int num_monitors;
+    char *monitor_name;
+    XRRMonitorInfo *monitor_sizes = XRRGetMonitors(
+            pdc->x.display, root, 0, &num_monitors);
+
+    /* Compare monitors output names */
+    int i;
+    for (i = 0; i < num_monitors; i++)
+    {
+        monitor_name = XGetAtomName(pdc->x.display,
+                                    monitor_sizes[i].name);
+        if (strcmp(pconf->monitor, monitor_name) == 0)
+            break;
+    }
+    if (i != num_monitors)
+    {
+        pdc->x.monitor_info.x = monitor_sizes[i].x;
+        pdc->x.monitor_info.y = monitor_sizes[i].y;
+        pdc->x.monitor_info.width = monitor_sizes[i].width;
+        pdc->x.monitor_info.height = monitor_sizes[i].height;
+        strcpy(pdc->x.monitor_info.name, monitor_name);
+    }
+    else // Monitor name is not found
+    {
+        /* Use combined surface for monitor option if no monitors with
+         * provided name found */
+        fprintf(stderr, "Error: monitor %s is not found.\n",
+                pconf->monitor);
+        fprintf(stderr, "Info: falling back to combined mode.\n");
+        set_combined_position(pdc);
+        // strcpy(pdc.x.monitor_info.name, MONITOR_COMBINED);
+    }
+    XRRFreeMonitors(monitor_sizes);
+}
+
 /* PUBLIC Returns a new display context from a given configuration. If the
  * .x.display field of the returned display context is NULL, display could not
  * have been opened.*/
@@ -160,51 +211,27 @@ Display_context init(Style conf)
         window_attributes.border_pixel = 0;
         window_attributes.override_redirect = True;
 
-        if (strcmp(conf.monitor, MONITOR_COMBINED) != 0)
-        {
-            /* Get monitors info */
-            int num_monitors;
-            char *monitor_name;
-            XRRMonitorInfo *monitor_sizes = XRRGetMonitors(
-                    dc.x.display, root, 0, &num_monitors);
-            int i;
-            for (i = 0; i < num_monitors; i++)
-            {
-                monitor_name = XGetAtomName(dc.x.display,
-                                            monitor_sizes[i].name);
-                if (strcmp(conf.monitor, monitor_name) == 0)
-                    break;
-            }
-            if (i == num_monitors) // Monitor name is not found
-            {
-                /* Use combined for monitor option if no monitors with
-                 * provided name found*/
-                fprintf(stderr, "Error: monitor %s is not found.\n",
-                        conf.monitor);
-                fprintf(stderr, "Info: falling back to combined mode.\n");
-                dc.x.monitor_info.x = 0;
-                dc.x.monitor_info.y = 0;
-                dc.x.monitor_info.width = WidthOfScreen(dc.x.screen);
-                dc.x.monitor_info.height = HeightOfScreen(dc.x.screen);
-                strcpy(dc.x.monitor_info.name, MONITOR_COMBINED);
-            }
-            else
-            {
-                dc.x.monitor_info.x = monitor_sizes[i].x;
-                dc.x.monitor_info.y = monitor_sizes[i].y;
-                dc.x.monitor_info.width = monitor_sizes[i].width;
-                dc.x.monitor_info.height = monitor_sizes[i].height;
-                strcpy(dc.x.monitor_info.name, monitor_name);
-            }
-            XRRFreeMonitors(monitor_sizes);
-        }
+        /* Get bar position from conf */
+        if (strcmp(conf.monitor, MONITOR_RELATIVE_FOCUS) == 0)
+            dc.x.bar_position = POSITION_RELATIVE_FOCUS;
+        else if (strcmp(conf.monitor, MONITOR_RELATIVE_POINTER) == 0)
+            dc.x.bar_position = POSITION_RELATIVE_POINTER;
+        else if (strcmp(conf.monitor, MONITOR_COMBINED) == 0)
+            dc.x.bar_position = POSITION_COMBINED;
         else
+            dc.x.bar_position = POSITION_SPECIFIED;
+
+        switch (dc.x.bar_position)
         {
-            dc.x.monitor_info.x = 0;
-            dc.x.monitor_info.y = 0;
-            dc.x.monitor_info.width = WidthOfScreen(dc.x.screen);
-            dc.x.monitor_info.height = HeightOfScreen(dc.x.screen);
-            strcpy(dc.x.monitor_info.name, MONITOR_COMBINED);
+            case POSITION_COMBINED:
+                set_combined_position(&dc);
+                break;
+            case POSITION_SPECIFIED:
+                set_specified_position(&dc, &conf);
+                break;
+            default:
+                fprintf(stderr, "Error: in switch position\n");
+                break;
         }
 
         compute_geometry(conf, &dc, &topleft_x, &topleft_y, &fat_layer,

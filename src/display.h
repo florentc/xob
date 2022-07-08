@@ -20,6 +20,15 @@
 
 #include "conf.h"
 #include <X11/Xlib.h>
+#include <X11/extensions/Xrandr.h>
+
+typedef enum
+{
+    POSITION_RELATIVE_FOCUS,
+    POSITION_RELATIVE_POINTER,
+    POSITION_COMBINED,
+    POSITION_SPECIFIED
+} Bar_position;
 
 typedef enum
 {
@@ -44,6 +53,7 @@ typedef struct
     Window window;
     Bool mapped;
     MonitorInfo monitor_info;
+    Bar_position bar_position;
 } X_context;
 
 typedef struct
