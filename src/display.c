@@ -181,29 +181,13 @@ static void set_specified_position(Display_context * pdc, const Style * pconf)
     XRRFreeMonitors(monitor_sizes);
 }
 
-/* Change position for the bar to focused monitor */
-static void move_to_focused_monitor(const Display_context * pdc)
+/* Move the bar to a monitor with provided coords */
+static void move_to_coords_monitor(const Display_context * pdc, int x, int y)
 {
-
-    int revert_to_window;
-    int focused_x, focused_y, topleft_x, topleft_y;
-    int num_monitors;
     int fat_layer, i;
-
+    int topleft_x, topleft_y;
+    int num_monitors;
     XRRMonitorInfo *monitor_sizes;
-    Window focused_window, fchild_window;
-
-    XGetInputFocus(pdc->x.display, &focused_window, &revert_to_window);
-
-    /* Get coords of focused window */
-    XTranslateCoordinates(pdc->x.display, focused_window,
-            RootWindow(pdc->x.display, pdc->x.screen_number),
-            0, 0, &focused_x, &focused_y, &fchild_window);
-
-    fprintf(stderr, "\ncoords x[%d] y[%d]\n", focused_x, focused_y);
-    fprintf(stderr, "x_rel[%.2f] x_abs[%d], y_rel[%.2f], y_abs[%d]\n",
-            pdc->x.x_rel, pdc->x.x_abs, pdc->x.y_rel, pdc->x.y_abs);
-
     fat_layer = pdc->geometry.padding + pdc->geometry.border +
         pdc->geometry.outline;
 
@@ -212,15 +196,11 @@ static void move_to_focused_monitor(const Display_context * pdc)
             0, &num_monitors);
     for (i = 0; i < num_monitors; i++)
     {
-        printf("x[%d] y[%d] w[%d] h[%d]\n", monitor_sizes[i].x,
-                monitor_sizes[i].y, monitor_sizes[i].width,
-                monitor_sizes[i].height);
-
         /* Find monitor by coordinates of focused window */
-        if (focused_x > monitor_sizes[i].x &&
-                focused_x < monitor_sizes[i].x + monitor_sizes[i].width &&
-                focused_y > monitor_sizes[i].y &&
-                focused_y < monitor_sizes[i].y + monitor_sizes[i].height)
+        if (x > monitor_sizes[i].x &&
+                x < monitor_sizes[i].x + monitor_sizes[i].width &&
+                y > monitor_sizes[i].y &&
+                y < monitor_sizes[i].y + monitor_sizes[i].height)
         {
             topleft_x = fit_in(monitor_sizes[i].width * pdc->x.x_rel -
                             (size_x(pdc->geometry) + 2 * fat_layer) / 2,
@@ -236,11 +216,6 @@ static void move_to_focused_monitor(const Display_context * pdc)
                             (size_y(pdc->geometry) + 2 * fat_layer)) +
                                 pdc->x.y_abs + monitor_sizes[i].y;
 
-            fprintf(stderr, "Mname[%s]\n", XGetAtomName(
-                        pdc->x.display, monitor_sizes[i].name));
-            printf("topleft_x[%d] topleft_y[%d]\n", topleft_x,
-                    topleft_y);
-
             XMoveWindow(pdc->x.display, pdc->x.window,
                     topleft_x, topleft_y);
             break;
@@ -250,6 +225,38 @@ static void move_to_focused_monitor(const Display_context * pdc)
     XRRFreeMonitors(monitor_sizes);
 }
 
+/* Mobe the bar to monitor with focused window */
+static void move_to_focused_monitor(const Display_context * pdc)
+{
+    int revert_to_window;
+    int focused_x, focused_y;
+
+    Window focused_window, fchild_window;
+
+    XGetInputFocus(pdc->x.display, &focused_window, &revert_to_window);
+
+    /* Get coords of focused window */
+    XTranslateCoordinates(pdc->x.display, focused_window,
+            RootWindow(pdc->x.display, pdc->x.screen_number),
+            0, 0, &focused_x, &focused_y, &fchild_window);
+
+    move_to_coords_monitor(pdc, focused_x, focused_y);
+}
+
+/* Move the bar to monitor with pointer */
+static void move_to_pointer_monitor(const Display_context * pdc)
+{
+    int pointer_x, pointer_y, win_x, win_y;
+    unsigned int p_mask;
+    Window p_root, p_child;
+
+    XQueryPointer(pdc->x.display,
+            RootWindow(pdc->x.display, pdc->x.screen_number),
+            &p_root, &p_child, &pointer_x, &pointer_y, &win_x, &win_y,
+            &p_mask);
+
+    move_to_coords_monitor(pdc, pointer_x, pointer_y);
+}
 
 /* PUBLIC Returns a new display context from a given configuration. If the
  * .x.display field of the returned display context is NULL, display could not
@@ -355,6 +362,21 @@ Display_context show(Display_context dc, int value, int cap,
     Colors colors;
     Colors colors_overflow_proportional;
 
+    /* Move the bar for relative positions */
+    // switch (dc.x.bar_position)
+    switch (POSITION_RELATIVE_POINTER)
+    {
+        case POSITION_RELATIVE_FOCUS:
+            move_to_focused_monitor(&dc);
+            break;
+        case POSITION_RELATIVE_POINTER:
+            move_to_pointer_monitor(&dc);
+            break;
+        case POSITION_COMBINED:
+        case POSITION_SPECIFIED:
+            break;
+    }
+
     if (!dc.x.mapped)
     {
         XMapWindow(dc.x.display, dc.x.window);
@@ -396,18 +418,6 @@ Display_context show(Display_context dc, int value, int cap,
                      colors_overflow_proportional.fg);
         draw_separator(dc.x, dc.geometry, cap * dc.geometry.length / value,
                        colors.bg);
-    }
-
-    /* Move the bar for relative positions */
-    // switch (dc.x.bar_position)
-    switch (POSITION_RELATIVE_FOCUS)
-    {
-        case POSITION_RELATIVE_FOCUS:
-            move_to_focused_monitor(&dc);
-            break;
-        case POSITION_COMBINED:
-        case POSITION_SPECIFIED:
-            break;
     }
 
     XFlush(dc.x.display);
