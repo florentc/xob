@@ -53,11 +53,6 @@ typedef struct
     Window window;
     Bool mapped;
     MonitorInfo monitor_info;
-    Bar_position bar_position;
-    double x_rel;
-    int x_abs;
-    double y_rel;
-    int y_abs;
 } X_context;
 
 typedef struct
@@ -67,6 +62,15 @@ typedef struct
     int padding;
     int length;
     int thickness;
+    struct {
+        double rel;
+        int abs;
+    } x;
+    struct {
+        double rel;
+        int abs;
+    } y;
+    Bar_position bar_position;
     Orientation orientation;
 } Geometry_context;
 

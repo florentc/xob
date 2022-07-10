@@ -202,19 +202,19 @@ static void move_to_coords_monitor(const Display_context * pdc, int x, int y)
                 y > monitor_sizes[i].y &&
                 y < monitor_sizes[i].y + monitor_sizes[i].height)
         {
-            topleft_x = fit_in(monitor_sizes[i].width * pdc->x.x_rel -
+            topleft_x = fit_in(monitor_sizes[i].width * pdc->geometry.x.rel -
                             (size_x(pdc->geometry) + 2 * fat_layer) / 2,
                             0,
                             monitor_sizes[i].width -
                             (size_x(pdc->geometry) + 2 * fat_layer)) +
-                                pdc->x.x_abs + monitor_sizes[i].x;
+                                pdc->geometry.x.abs + monitor_sizes[i].x;
 
-            topleft_y = fit_in(monitor_sizes[i].height * pdc->x.y_rel -
+            topleft_y = fit_in(monitor_sizes[i].height * pdc->geometry.y.rel -
                             (size_y(pdc->geometry) + 2 * fat_layer) / 2,
                             0,
                             monitor_sizes[i].height -
                             (size_y(pdc->geometry) + 2 * fat_layer)) +
-                                pdc->x.y_abs + monitor_sizes[i].y;
+                                pdc->geometry.y.abs + monitor_sizes[i].y;
 
             XMoveWindow(pdc->x.display, pdc->x.window,
                     topleft_x, topleft_y);
@@ -289,22 +289,22 @@ Display_context init(Style conf)
         window_attributes.override_redirect = True;
 
         /* Write bar position relative data to X_context */
-        dc.x.x_rel = conf.x.rel;
-        dc.x.x_abs = conf.x.abs;
-        dc.x.y_rel = conf.y.rel;
-        dc.x.y_abs = conf.y.abs;
+        dc.geometry.x.rel = conf.x.rel;
+        dc.geometry.x.abs = conf.x.abs;
+        dc.geometry.y.rel = conf.y.rel;
+        dc.geometry.y.abs = conf.y.abs;
 
         /* Get bar position from conf */
         if (strcmp(conf.monitor, MONITOR_RELATIVE_FOCUS) == 0)
-            dc.x.bar_position = POSITION_RELATIVE_FOCUS;
+            dc.geometry.bar_position = POSITION_RELATIVE_FOCUS;
         else if (strcmp(conf.monitor, MONITOR_RELATIVE_POINTER) == 0)
-            dc.x.bar_position = POSITION_RELATIVE_POINTER;
+            dc.geometry.bar_position = POSITION_RELATIVE_POINTER;
         else if (strcmp(conf.monitor, MONITOR_COMBINED) == 0)
-            dc.x.bar_position = POSITION_COMBINED;
+            dc.geometry.bar_position = POSITION_COMBINED;
         else
-            dc.x.bar_position = POSITION_SPECIFIED;
+            dc.geometry.bar_position = POSITION_SPECIFIED;
 
-        switch (dc.x.bar_position)
+        switch (dc.geometry.bar_position)
         {
             case POSITION_COMBINED:
                 set_combined_position(&dc);
@@ -363,7 +363,7 @@ Display_context show(Display_context dc, int value, int cap,
     Colors colors_overflow_proportional;
 
     /* Move the bar for relative positions */
-    // switch (dc.x.bar_position)
+    // switch (dc.geometry.bar_position)
     switch (POSITION_RELATIVE_POINTER)
     {
         case POSITION_RELATIVE_FOCUS:
