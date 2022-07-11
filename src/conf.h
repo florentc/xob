@@ -24,7 +24,7 @@
 #define MONITOR_RELATIVE_POINTER "relative_pointer"
 #define MONITOR_COMBINED "combined"
 
-#define LNAME_MONITOR 12
+#define LNAME_MONITOR 17
 
 typedef struct
 {

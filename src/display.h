@@ -61,12 +61,19 @@ typedef struct
     int border;
     int padding;
     int length;
+    struct
+    {
+        double rel;
+        int abs;
+    } length_dynamic;
     int thickness;
-    struct {
+    struct
+    {
         double rel;
         int abs;
     } x;
-    struct {
+    struct
+    {
         double rel;
         int abs;
     } y;
