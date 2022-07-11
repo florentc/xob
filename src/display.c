@@ -36,6 +36,7 @@ static int size_x(Geometry_context g)
 {
     return g.orientation == HORIZONTAL ? g.length : g.thickness;
 }
+
 static int size_y(Geometry_context g)
 {
     return g.orientation == HORIZONTAL ? g.thickness : g.length;
@@ -212,10 +213,10 @@ static void set_specified_position(Display_context *pdc, const Style *pconf)
     XRRFreeMonitors(monitor_sizes);
 }
 
-/* Move the bar to a monitor with provided coords */
-static void move_to_coords_monitor(const Display_context *pdc, int x, int y)
+/* Move and resize the bar relative to a monitor with provided coords */
+static void move_resize_to_coords_monitor(Display_context *pdc, int x, int y)
 {
-    int fat_layer, i;
+    int fat_layer, available_length, bar_size_x, bar_size_y, i;
     int topleft_x, topleft_y;
     int num_monitors;
     XRRMonitorInfo *monitor_sizes;
@@ -233,21 +234,33 @@ static void move_to_coords_monitor(const Display_context *pdc, int x, int y)
             y > monitor_sizes[i].y &&
             y < monitor_sizes[i].y + monitor_sizes[i].height)
         {
+            /* Recalculate bar sizes */
+            available_length = pdc->geometry.orientation == HORIZONTAL
+                                   ? monitor_sizes[i].width
+                                   : monitor_sizes[i].height;
+
+            pdc->geometry.length =
+                fit_in(available_length * pdc->geometry.length_dynamic.rel +
+                           pdc->geometry.length_dynamic.abs,
+                       0, available_length - 2 * fat_layer);
+
+            bar_size_x = size_x(pdc->geometry) + 2 * fat_layer;
+            bar_size_y = size_y(pdc->geometry) + 2 * fat_layer;
+
+            /* Recalculate bar position */
             topleft_x = fit_in(monitor_sizes[i].width * pdc->geometry.x.rel -
-                                   (size_x(pdc->geometry) + 2 * fat_layer) / 2,
-                               0,
-                               monitor_sizes[i].width -
-                                   (size_x(pdc->geometry) + 2 * fat_layer)) +
+                                   bar_size_x / 2,
+                               0, monitor_sizes[i].width - bar_size_x) +
                         pdc->geometry.x.abs + monitor_sizes[i].x;
 
             topleft_y = fit_in(monitor_sizes[i].height * pdc->geometry.y.rel -
-                                   (size_y(pdc->geometry) + 2 * fat_layer) / 2,
-                               0,
-                               monitor_sizes[i].height -
-                                   (size_y(pdc->geometry) + 2 * fat_layer)) +
+                                   bar_size_y / 2,
+                               0, monitor_sizes[i].height - bar_size_y) +
                         pdc->geometry.y.abs + monitor_sizes[i].y;
 
-            XMoveWindow(pdc->x.display, pdc->x.window, topleft_x, topleft_y);
+            /* Move and resize bar */
+            XMoveResizeWindow(pdc->x.display, pdc->x.window, topleft_x,
+                              topleft_y, bar_size_x, bar_size_y);
             break;
         }
     }
@@ -256,7 +269,7 @@ static void move_to_coords_monitor(const Display_context *pdc, int x, int y)
 }
 
 /* Mobe the bar to monitor with focused window */
-static void move_to_focused_monitor(const Display_context *pdc)
+static void move_resize_to_focused_monitor(Display_context *pdc)
 {
     int revert_to_window;
     int focused_x, focused_y;
@@ -270,11 +283,11 @@ static void move_to_focused_monitor(const Display_context *pdc)
                           RootWindow(pdc->x.display, pdc->x.screen_number), 0,
                           0, &focused_x, &focused_y, &fchild_window);
 
-    move_to_coords_monitor(pdc, focused_x, focused_y);
+    move_resize_to_coords_monitor(pdc, focused_x, focused_y);
 }
 
 /* Move the bar to monitor with pointer */
-static void move_to_pointer_monitor(const Display_context *pdc)
+static void move_resize_to_pointer_monitor(Display_context *pdc)
 {
     int pointer_x, pointer_y, win_x, win_y;
     unsigned int p_mask;
@@ -284,7 +297,7 @@ static void move_to_pointer_monitor(const Display_context *pdc)
                   RootWindow(pdc->x.display, pdc->x.screen_number), &p_root,
                   &p_child, &pointer_x, &pointer_y, &win_x, &win_y, &p_mask);
 
-    move_to_coords_monitor(pdc, pointer_x, pointer_y);
+    move_resize_to_coords_monitor(pdc, pointer_x, pointer_y);
 }
 
 /* PUBLIC Returns a new display context from a given configuration. If the
@@ -400,10 +413,10 @@ Display_context show(Display_context dc, int value, int cap,
     switch (dc.geometry.bar_position)
     {
     case POSITION_RELATIVE_FOCUS:
-        move_to_focused_monitor(&dc);
+        move_resize_to_focused_monitor(&dc);
         break;
     case POSITION_RELATIVE_POINTER:
-        move_to_pointer_monitor(&dc);
+        move_resize_to_pointer_monitor(&dc);
         break;
     case POSITION_COMBINED:
     case POSITION_SPECIFIED:
