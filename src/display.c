@@ -198,10 +198,10 @@ static void move_resize_to_coords_monitor(Display_context *pdc, int x, int y)
         &num_monitors);
     for (i = 0; i < num_monitors; i++)
     {
-        /* Find monitor by coordinates of focused window */
-        if (x > monitor_sizes[i].x &&
+        /* Find monitor by coords */
+        if (x >= monitor_sizes[i].x &&
             x < monitor_sizes[i].x + monitor_sizes[i].width &&
-            y > monitor_sizes[i].y &&
+            y >= monitor_sizes[i].y &&
             y < monitor_sizes[i].y + monitor_sizes[i].height)
         {
             /* Recalculate bar sizes */
@@ -243,6 +243,8 @@ static void move_resize_to_focused_monitor(Display_context *pdc)
 {
     int revert_to_window;
     int focused_x, focused_y;
+    int dummy_x, dummy_y;
+    unsigned int focused_width, focused_height, focused_border, focused_depth;
 
     Window focused_window, fchild_window;
 
@@ -252,8 +254,14 @@ static void move_resize_to_focused_monitor(Display_context *pdc)
     XTranslateCoordinates(pdc->x.display, focused_window,
                           RootWindow(pdc->x.display, pdc->x.screen_number), 0,
                           0, &focused_x, &focused_y, &fchild_window);
+    /* Get focused window width and height to move bar relative to
+     * the center of focused window */
+    XGetGeometry(pdc->x.display, focused_window, &fchild_window, &dummy_x,
+                 &dummy_y, &focused_width, &focused_height, &focused_border,
+                 &focused_depth);
 
-    move_resize_to_coords_monitor(pdc, focused_x, focused_y);
+    move_resize_to_coords_monitor(pdc, focused_x + focused_width / 2,
+                                  focused_y + focused_height / 2);
 }
 
 /* Move the bar to monitor with pointer */
