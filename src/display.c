@@ -45,34 +45,107 @@ static int size_y(Geometry_context g)
 static void draw_empty(X_context x, Geometry_context g, Colors colors)
 {
     /* Outline */
+#ifdef _DEBUG_
+    // fill_rectangle(x, colors.bg, 0, 0,
+    //                2 * (g.outline + g.border + g.padding) + size_x(g),
+    //                2 * (g.outline + g.border + g.padding) + size_y(g));
+#endif
+    /* Left */
+    fill_rectangle(x, colors.bg, 0, 0, g.outline,
+                   2 * (g.outline + g.border + g.padding) + size_y(g));
+
+    /* Right */
+    fill_rectangle(
+        x, colors.bg, 2 * (g.border + g.padding) + g.outline + size_x(g), 0,
+        g.outline, 2 * (g.outline + g.border + g.padding) + size_y(g));
+
+    /* Top */
     fill_rectangle(x, colors.bg, 0, 0,
                    2 * (g.outline + g.border + g.padding) + size_x(g),
-                   2 * (g.outline + g.border + g.padding) + size_y(g));
+                   g.outline);
+
+    /* Bottom */
+    fill_rectangle(
+        x, colors.bg, 0, 2 * (g.border + g.padding) + g.outline + size_y(g),
+        2 * (g.outline + g.border + g.padding) + size_x(g), g.outline);
+
     /* Border */
+#ifdef _DEBUG_
     fill_rectangle(x, colors.border, g.outline, g.outline,
                    2 * (g.border + g.padding) + size_x(g),
                    2 * (g.border + g.padding) + size_y(g));
+#endif
+    /* Left */
+    fill_rectangle(x, colors.border, g.outline, g.outline, g.border,
+                   2 * (g.border + g.padding) + size_y(g));
+
+    /* Right */
+    fill_rectangle(x, colors.border,
+                   g.outline + g.border + 2 * g.padding + size_x(g), g.outline,
+                   g.border, 2 * (g.border + g.padding) + size_y(g));
+
+    /* Top */
+    fill_rectangle(x, colors.border, g.outline, g.outline,
+                   2 * (g.border + g.padding) + size_x(g), g.border);
+
+    /* Bottom */
+    fill_rectangle(x, colors.border, g.outline,
+                   g.outline + g.border + 2 * g.padding + size_y(g),
+                   2 * (g.border + g.padding) + size_x(g), g.border);
+
     /* Padding */
+#ifdef _DEBUG_
     fill_rectangle(x, colors.bg, g.outline + g.border, g.outline + g.border,
                    2 * g.padding + size_x(g), 2 * g.padding + size_y(g));
+#endif
+
+    /* Left */
+    fill_rectangle(x, colors.bg, g.outline + g.border, g.outline + g.border,
+                   g.padding, 2 * g.padding + size_y(g));
+
+    /* Right */
+    fill_rectangle(x, colors.bg, g.outline + g.border + g.padding + size_x(g),
+                   g.outline + g.border, g.padding, 2 * g.padding + size_y(g));
+
+    /* Top */
+    fill_rectangle(x, colors.bg, g.outline + g.border, g.outline + g.border,
+                   2 * g.padding + size_x(g), g.padding);
+
+    /* Bottom */
+    fill_rectangle(x, colors.bg, g.outline + g.border,
+                   g.outline + g.border + g.padding + size_y(g),
+                   2 * g.padding + size_x(g), g.padding);
 }
 
 /* Draw a given length of filled bar with the given color */
 static void draw_content(X_context x, Geometry_context g, int filled_length,
-                         Color color)
+                         Colors colors)
 {
     if (g.orientation == HORIZONTAL)
     {
-        fill_rectangle(x, color, g.outline + g.border + g.padding,
+        /* Fill foreground color */
+        fill_rectangle(x, colors.fg, g.outline + g.border + g.padding,
                        g.outline + g.border + g.padding, filled_length,
                        g.thickness);
+
+        /* Fill background color */
+        fill_rectangle(x, colors.bg,
+                       g.outline + g.border + g.padding + filled_length,
+                       g.outline + g.border + g.padding,
+                       g.length - filled_length, g.thickness);
     }
     else
     {
-        fill_rectangle(x, color, g.outline + g.border + g.padding,
+        /* fill foreground color */
+        fill_rectangle(x, colors.fg, g.outline + g.border + g.padding,
                        g.outline + g.border + g.padding + g.length -
                            filled_length,
                        g.thickness, filled_length);
+
+        /* Fill background color */
+        fill_rectangle(x, colors.bg, g.outline + g.border + g.padding,
+                       g.outline + g.border + g.padding,
+                       g.thickness, g.length - filled_length);
     }
 }
 
@@ -165,13 +238,13 @@ Display_context init(Style conf)
             /* Get monitors info */
             int num_monitors;
             char *monitor_name;
-            XRRMonitorInfo *monitor_sizes = XRRGetMonitors(
-                    dc.x.display, root, 0, &num_monitors);
+            XRRMonitorInfo *monitor_sizes =
+                XRRGetMonitors(dc.x.display, root, 0, &num_monitors);
             int i;
             for (i = 0; i < num_monitors; i++)
             {
-                monitor_name = XGetAtomName(dc.x.display,
-                                            monitor_sizes[i].name);
+                monitor_name =
+                    XGetAtomName(dc.x.display, monitor_sizes[i].name);
                 if (strcmp(conf.monitor, monitor_name) == 0)
                     break;
             }
@@ -283,14 +356,14 @@ Display_context show(Display_context dc, int value, int cap,
 
     /* Content */
     draw_content(dc.x, dc.geometry,
-                 fit_in(value, 0, cap) * dc.geometry.length / cap, colors.fg);
+                 fit_in(value, 0, cap) * dc.geometry.length / cap, colors);
 
     /* Proportional overflow : draw separator */
     if (value > cap && overflow_mode == PROPORTIONAL &&
         cap * dc.geometry.length / value > dc.geometry.padding)
     {
         draw_content(dc.x, dc.geometry, cap * dc.geometry.length / value,
-                     colors_overflow_proportional.fg);
+                     colors_overflow_proportional);
         draw_separator(dc.x, dc.geometry, cap * dc.geometry.length / value,
                        colors.bg);
     }
