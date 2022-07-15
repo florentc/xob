@@ -144,36 +144,6 @@ static void set_combined_position(Display_context *pdc)
     // strcpy(pdc->x.monitor_info.name, MONITOR_COMBINED);
 }
 
-/* Set bar size relative to the first monitor */
-static void set_relative_position(Display_context *pdc)
-{
-    Window root = RootWindow(pdc->x.display, pdc->x.screen_number);
-
-    /* Get monitors info */
-    int num_monitors;
-    XRRMonitorInfo *monitor_sizes =
-        XRRGetMonitors(pdc->x.display, root, 0, &num_monitors);
-
-    /* Set monitor_info for the first monitor */
-    if (num_monitors != 0)
-    {
-        pdc->x.monitor_info.x = monitor_sizes[0].x;
-        pdc->x.monitor_info.y = monitor_sizes[0].y;
-        pdc->x.monitor_info.width = monitor_sizes[0].width;
-        pdc->x.monitor_info.height = monitor_sizes[0].height;
-    }
-    else // Monitor name is not found
-    {
-        /* Use combined surface for monitor option if no monitors with
-         * provided name found */
-        fprintf(stderr, "Error: Can't get monitors info.\n");
-        fprintf(stderr, "Info: falling back to combined mode.\n");
-        set_combined_position(pdc);
-        // strcpy(pdc.x.monitor_info.name, MONITOR_COMBINED);
-    }
-    XRRFreeMonitors(monitor_sizes);
-}
-
 /* Set specified monitor */
 static void set_specified_position(Display_context *pdc, const Style *pconf)
 {
@@ -350,7 +320,10 @@ Display_context init(Style conf)
         {
         case POSITION_RELATIVE_FOCUS:
         case POSITION_RELATIVE_POINTER:
-            set_relative_position(&dc);
+            /* Bar position and sizes will be recalculated every time before
+             * showing, so the code just init position and sizes like for
+             * combined surface */
+            set_combined_position(&dc);
             break;
         case POSITION_COMBINED:
             set_combined_position(&dc);
