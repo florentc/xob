@@ -491,7 +491,10 @@ Display_context show(Display_context dc, int value, int cap,
         if (value <= cap)
             colors = dc.colorscheme.normal;
         else
+        {
             colors = dc.colorscheme.overflow;
+            colors_overflow_proportional.bg = colors.fg;
+        }
         break;
 
     case ALTERNATIVE:
@@ -499,16 +502,15 @@ Display_context show(Display_context dc, int value, int cap,
         if (value <= cap)
             colors = dc.colorscheme.alt;
         else
+        {
             colors = dc.colorscheme.altoverflow;
+            colors_overflow_proportional.bg = colors.fg;
+        }
         break;
     }
 
     /* Empty bar */
     draw_empty(dc.x, dc.geometry, colors);
-
-    /* Content */
-    draw_content(dc.x, dc.geometry,
-                 fit_in(value, 0, cap) * dc.geometry.length / cap, colors);
 
     /* Proportional overflow : draw separator */
     if (value > cap && overflow_mode == PROPORTIONAL &&
@@ -519,6 +521,10 @@ Display_context show(Display_context dc, int value, int cap,
         draw_separator(dc.x, dc.geometry, cap * dc.geometry.length / value,
                        colors.bg);
     }
+    else // Value is less then cap
+        /* Content */
+        draw_content(dc.x, dc.geometry,
+                     fit_in(value, 0, cap) * dc.geometry.length / cap, colors);
 
     XFlush(dc.x.display);
 
