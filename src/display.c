@@ -144,8 +144,8 @@ static void draw_content(X_context x, Geometry_context g, int filled_length,
 
         /* Fill background color */
         fill_rectangle(x, colors.bg, g.outline + g.border + g.padding,
-                       g.outline + g.border + g.padding,
-                       g.thickness, g.length - filled_length);
+                       g.outline + g.border + g.padding, g.thickness,
+                       g.length - filled_length);
     }
 }
 
