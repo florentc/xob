@@ -20,6 +20,7 @@
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <X11/extensions/Xrandr.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -461,16 +462,19 @@ Display_context show(Display_context dc, int value, int cap,
 
     Colors colors;
     Colors colors_overflow_proportional;
+    static int_fast8_t current_state = 0x0;
+    static int_fast8_t last_state = 0x0;
 
     /* Move the bar for relative positions */
-    // switch (dc.geometry.bar_position)
     switch (dc.geometry.bar_position)
     {
     case POSITION_RELATIVE_FOCUS:
         move_resize_to_focused_monitor(&dc);
+        current_state ^= STATE_SIZE;
         break;
     case POSITION_RELATIVE_POINTER:
         move_resize_to_pointer_monitor(&dc);
+        current_state ^= STATE_SIZE;
         break;
     case POSITION_COMBINED:
     case POSITION_SPECIFIED:
@@ -488,29 +492,43 @@ Display_context show(Display_context dc, int value, int cap,
     {
     case NORMAL:
         colors_overflow_proportional = dc.colorscheme.normal;
+        current_state &= ~STATE_ALT;
         if (value <= cap)
+        {
             colors = dc.colorscheme.normal;
+            current_state &= ~STATE_OVERFLOW;
+        }
         else
         {
             colors = dc.colorscheme.overflow;
             colors_overflow_proportional.bg = colors.fg;
+            current_state |= STATE_OVERFLOW;
         }
         break;
 
     case ALTERNATIVE:
         colors_overflow_proportional = dc.colorscheme.alt;
+        current_state |= STATE_ALT;
         if (value <= cap)
+        {
             colors = dc.colorscheme.alt;
+            current_state &= ~STATE_OVERFLOW;
+        }
         else
         {
             colors = dc.colorscheme.altoverflow;
             colors_overflow_proportional.bg = colors.fg;
+            current_state |= STATE_OVERFLOW;
         }
         break;
     }
 
-    /* Empty bar */
-    draw_empty(dc.x, dc.geometry, colors);
+    if (!dc.x.mapped || last_state != current_state)
+    {
+        /* Empty bar */
+        draw_empty(dc.x, dc.geometry, colors);
+    }
+    last_state = current_state;
 
     /* Proportional overflow : draw separator */
     if (value > cap && overflow_mode == PROPORTIONAL &&

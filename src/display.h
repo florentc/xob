@@ -22,6 +22,10 @@
 #include <X11/Xlib.h>
 #include <X11/extensions/Xrandr.h>
 
+#define STATE_ALT (0x1)
+#define STATE_OVERFLOW (0x1 << 1)
+#define STATE_SIZE (0x1 << 2)
+
 typedef enum
 {
     POSITION_RELATIVE_FOCUS,
