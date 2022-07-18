@@ -36,6 +36,7 @@ static int size_x(Geometry_context g)
 {
     return g.orientation == HORIZONTAL ? g.length : g.thickness;
 }
+
 static int size_y(Geometry_context g)
 {
     return g.orientation == HORIZONTAL ? g.thickness : g.length;
@@ -176,6 +177,9 @@ void compute_geometry(Style conf, Display_context *dc, int *topleft_x,
     dc->geometry.padding = conf.padding;
     dc->geometry.thickness = conf.thickness;
     dc->geometry.orientation = conf.orientation;
+    dc->geometry.length_dynamic.rel = conf.length.rel;
+    dc->geometry.length_dynamic.abs = conf.length.abs;
+
     *fat_layer =
         dc->geometry.padding + dc->geometry.border + dc->geometry.outline;
 
@@ -201,6 +205,150 @@ void compute_geometry(Style conf, Display_context *dc, int *topleft_x,
                         dc->x.monitor_info.height -
                             (size_y(dc->geometry) + 2 * *fat_layer)) +
                  conf.y.abs + dc->x.monitor_info.y;
+}
+
+/* Set combined positon */
+static void set_combined_position(Display_context *pdc)
+{
+    pdc->x.monitor_info.x = 0;
+    pdc->x.monitor_info.y = 0;
+    pdc->x.monitor_info.width = WidthOfScreen(pdc->x.screen);
+    pdc->x.monitor_info.height = HeightOfScreen(pdc->x.screen);
+    // strcpy(pdc->x.monitor_info.name, MONITOR_COMBINED);
+}
+
+/* Set specified monitor */
+static void set_specified_position(Display_context *pdc, const Style *pconf)
+{
+    Window root = RootWindow(pdc->x.display, pdc->x.screen_number);
+
+    /* Get monitors info */
+    int num_monitors;
+    char *monitor_name;
+    XRRMonitorInfo *monitor_sizes =
+        XRRGetMonitors(pdc->x.display, root, 0, &num_monitors);
+
+    /* Compare monitors output names */
+    int i;
+    for (i = 0; i < num_monitors; i++)
+    {
+        monitor_name = XGetAtomName(pdc->x.display, monitor_sizes[i].name);
+        if (strcmp(pconf->monitor, monitor_name) == 0)
+            break;
+    }
+    if (i != num_monitors)
+    {
+        pdc->x.monitor_info.x = monitor_sizes[i].x;
+        pdc->x.monitor_info.y = monitor_sizes[i].y;
+        pdc->x.monitor_info.width = monitor_sizes[i].width;
+        pdc->x.monitor_info.height = monitor_sizes[i].height;
+        strcpy(pdc->x.monitor_info.name, monitor_name);
+    }
+    else // Monitor name is not found
+    {
+        /* Use combined surface for monitor option if no monitors with
+         * provided name found */
+        fprintf(stderr, "Error: monitor %s is not found.\n", pconf->monitor);
+        fprintf(stderr, "Info: falling back to combined mode.\n");
+        set_combined_position(pdc);
+        // strcpy(pdc.x.monitor_info.name, MONITOR_COMBINED);
+    }
+    XRRFreeMonitors(monitor_sizes);
+}
+
+/* Move and resize the bar relative to a monitor with provided coords */
+static void move_resize_to_coords_monitor(Display_context *pdc, int x, int y)
+{
+    int fat_layer, available_length, bar_size_x, bar_size_y, i;
+    int topleft_x, topleft_y;
+    int num_monitors;
+    XRRMonitorInfo *monitor_sizes;
+    fat_layer =
+        pdc->geometry.padding + pdc->geometry.border + pdc->geometry.outline;
+
+    monitor_sizes = XRRGetMonitors(
+        pdc->x.display, RootWindow(pdc->x.display, pdc->x.screen_number), 0,
+        &num_monitors);
+    for (i = 0; i < num_monitors; i++)
+    {
+        /* Find monitor by coords */
+        if (x >= monitor_sizes[i].x &&
+            x < monitor_sizes[i].x + monitor_sizes[i].width &&
+            y >= monitor_sizes[i].y &&
+            y < monitor_sizes[i].y + monitor_sizes[i].height)
+        {
+            /* Recalculate bar sizes */
+            available_length = pdc->geometry.orientation == HORIZONTAL
+                                   ? monitor_sizes[i].width
+                                   : monitor_sizes[i].height;
+
+            pdc->geometry.length =
+                fit_in(available_length * pdc->geometry.length_dynamic.rel +
+                           pdc->geometry.length_dynamic.abs,
+                       0, available_length - 2 * fat_layer);
+
+            bar_size_x = size_x(pdc->geometry) + 2 * fat_layer;
+            bar_size_y = size_y(pdc->geometry) + 2 * fat_layer;
+
+            /* Recalculate bar position */
+            topleft_x = fit_in(monitor_sizes[i].width * pdc->geometry.x.rel -
+                                   bar_size_x / 2,
+                               0, monitor_sizes[i].width - bar_size_x) +
+                        pdc->geometry.x.abs + monitor_sizes[i].x;
+
+            topleft_y = fit_in(monitor_sizes[i].height * pdc->geometry.y.rel -
+                                   bar_size_y / 2,
+                               0, monitor_sizes[i].height - bar_size_y) +
+                        pdc->geometry.y.abs + monitor_sizes[i].y;
+
+            /* Move and resize bar */
+            XMoveResizeWindow(pdc->x.display, pdc->x.window, topleft_x,
+                              topleft_y, bar_size_x, bar_size_y);
+            break;
+        }
+    }
+
+    XRRFreeMonitors(monitor_sizes);
+}
+
+/* Mobe the bar to monitor with focused window */
+static void move_resize_to_focused_monitor(Display_context *pdc)
+{
+    int revert_to_window;
+    int focused_x, focused_y;
+    int dummy_x, dummy_y;
+    unsigned int focused_width, focused_height, focused_border, focused_depth;
+
+    Window focused_window, fchild_window;
+
+    XGetInputFocus(pdc->x.display, &focused_window, &revert_to_window);
+
+    /* Get coords of focused window */
+    XTranslateCoordinates(pdc->x.display, focused_window,
+                          RootWindow(pdc->x.display, pdc->x.screen_number), 0,
+                          0, &focused_x, &focused_y, &fchild_window);
+    /* Get focused window width and height to move bar relative to
+     * the center of focused window */
+    XGetGeometry(pdc->x.display, focused_window, &fchild_window, &dummy_x,
+                 &dummy_y, &focused_width, &focused_height, &focused_border,
+                 &focused_depth);
+
+    move_resize_to_coords_monitor(pdc, focused_x + focused_width / 2,
+                                  focused_y + focused_height / 2);
+}
+
+/* Move the bar to monitor with pointer */
+static void move_resize_to_pointer_monitor(Display_context *pdc)
+{
+    int pointer_x, pointer_y, win_x, win_y;
+    unsigned int p_mask;
+    Window p_root, p_child;
+
+    XQueryPointer(pdc->x.display,
+                  RootWindow(pdc->x.display, pdc->x.screen_number), &p_root,
+                  &p_child, &pointer_x, &pointer_y, &win_x, &win_y, &p_mask);
+
+    move_resize_to_coords_monitor(pdc, pointer_x, pointer_y);
 }
 
 /* PUBLIC Returns a new display context from a given configuration. If the
@@ -233,51 +381,40 @@ Display_context init(Style conf)
         window_attributes.border_pixel = 0;
         window_attributes.override_redirect = True;
 
-        if (strcmp(conf.monitor, MONITOR_COMBINED) != 0)
-        {
-            /* Get monitors info */
-            int num_monitors;
-            char *monitor_name;
-            XRRMonitorInfo *monitor_sizes =
-                XRRGetMonitors(dc.x.display, root, 0, &num_monitors);
-            int i;
-            for (i = 0; i < num_monitors; i++)
-            {
-                monitor_name =
-                    XGetAtomName(dc.x.display, monitor_sizes[i].name);
-                if (strcmp(conf.monitor, monitor_name) == 0)
-                    break;
-            }
-            if (i == num_monitors) // Monitor name is not found
-            {
-                /* Use combined for monitor option if no monitors with
-                 * provided name found*/
-                fprintf(stderr, "Error: monitor %s is not found.\n",
-                        conf.monitor);
-                fprintf(stderr, "Info: falling back to combined mode.\n");
-                dc.x.monitor_info.x = 0;
-                dc.x.monitor_info.y = 0;
-                dc.x.monitor_info.width = WidthOfScreen(dc.x.screen);
-                dc.x.monitor_info.height = HeightOfScreen(dc.x.screen);
-                strcpy(dc.x.monitor_info.name, MONITOR_COMBINED);
-            }
-            else
-            {
-                dc.x.monitor_info.x = monitor_sizes[i].x;
-                dc.x.monitor_info.y = monitor_sizes[i].y;
-                dc.x.monitor_info.width = monitor_sizes[i].width;
-                dc.x.monitor_info.height = monitor_sizes[i].height;
-                strcpy(dc.x.monitor_info.name, monitor_name);
-            }
-            XRRFreeMonitors(monitor_sizes);
-        }
+        /* Write bar position relative data to X_context */
+        dc.geometry.x.rel = conf.x.rel;
+        dc.geometry.x.abs = conf.x.abs;
+        dc.geometry.y.rel = conf.y.rel;
+        dc.geometry.y.abs = conf.y.abs;
+
+        /* Get bar position from conf */
+        if (strcmp(conf.monitor, MONITOR_RELATIVE_FOCUS) == 0)
+            dc.geometry.bar_position = POSITION_RELATIVE_FOCUS;
+        else if (strcmp(conf.monitor, MONITOR_RELATIVE_POINTER) == 0)
+            dc.geometry.bar_position = POSITION_RELATIVE_POINTER;
+        else if (strcmp(conf.monitor, MONITOR_COMBINED) == 0)
+            dc.geometry.bar_position = POSITION_COMBINED;
         else
+            dc.geometry.bar_position = POSITION_SPECIFIED;
+
+        switch (dc.geometry.bar_position)
         {
-            dc.x.monitor_info.x = 0;
-            dc.x.monitor_info.y = 0;
-            dc.x.monitor_info.width = WidthOfScreen(dc.x.screen);
-            dc.x.monitor_info.height = HeightOfScreen(dc.x.screen);
-            strcpy(dc.x.monitor_info.name, MONITOR_COMBINED);
+        case POSITION_RELATIVE_FOCUS:
+        case POSITION_RELATIVE_POINTER:
+            /* Bar position and sizes will be recalculated every time before
+             * showing, so the code just init position and sizes like for
+             * combined surface */
+            set_combined_position(&dc);
+            break;
+        case POSITION_COMBINED:
+            set_combined_position(&dc);
+            break;
+        case POSITION_SPECIFIED:
+            set_specified_position(&dc, &conf);
+            break;
+        default:
+            fprintf(stderr, "Error: in switch position\n");
+            break;
         }
 
         compute_geometry(conf, &dc, &topleft_x, &topleft_y, &fat_layer,
@@ -324,6 +461,21 @@ Display_context show(Display_context dc, int value, int cap,
 
     Colors colors;
     Colors colors_overflow_proportional;
+
+    /* Move the bar for relative positions */
+    // switch (dc.geometry.bar_position)
+    switch (dc.geometry.bar_position)
+    {
+    case POSITION_RELATIVE_FOCUS:
+        move_resize_to_focused_monitor(&dc);
+        break;
+    case POSITION_RELATIVE_POINTER:
+        move_resize_to_pointer_monitor(&dc);
+        break;
+    case POSITION_COMBINED:
+    case POSITION_SPECIFIED:
+        break;
+    }
 
     if (!dc.x.mapped)
     {

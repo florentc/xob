@@ -259,8 +259,7 @@ Style parse_style_config(FILE *file, const char *stylename, Style default_style)
         xob_config = config_lookup(&config, stylename);
         if (xob_config != NULL)
         {
-            config_setting_lookup_monitor(xob_config, "monitor",
-                                         style.monitor);
+            config_setting_lookup_monitor(xob_config, "monitor", style.monitor);
             config_setting_lookup_int(xob_config, "thickness",
                                       &style.thickness);
             config_setting_lookup_int(xob_config, "border", &style.border);

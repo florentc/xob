@@ -20,8 +20,11 @@
 
 #include <stdio.h>
 
+#define MONITOR_RELATIVE_FOCUS "relative_focus"
+#define MONITOR_RELATIVE_POINTER "relative_pointer"
 #define MONITOR_COMBINED "combined"
-#define LNAME_MONITOR 12
+
+#define LNAME_MONITOR 17
 
 typedef struct
 {

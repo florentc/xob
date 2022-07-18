@@ -104,8 +104,8 @@ Options can be grouped together inside curly brackets. Some options expect a gro
 
 In the following, a dot "." means "suboption". For instance "color.normal.fg" means "The suboption fg of the suboption normal of option color".
 
-**monitor** "output_name" (default: combined)
-:   Output monitor for the bar, use `xrandr` command to get monitors names. The option is case-sensitive.
+**monitor** *"output_name" | "relative_focus" | "relative_pointer" | "combined"* (default: combined)
+:   Output monitor for the bar, use `xrandr` command to get monitors names. Use "relative_focus" to show the bar on the monitor with a focused window. Use "relative_pointer" to show the bar on the monitor with a mouse pointer. Use "combined" to show the bar on the combined surface of all monitors. The option is case-sensitive.
 
 **orientation** *"horizontal" | "vertical"* (default: vertical)
 :   Orientation of the bar which either fills up from left to right ("horizontal") or bottom to top ("vertical").
@@ -159,7 +159,6 @@ Each of the following have three suboptions ".fg", ".bg", and ".border" correspo
 
 
 ## STYLES
-
 All the options described above must be encompassed inside a style specification. A style consists of a group of all or some of the options described above. The name of the style is the name of an option at the root level of the configuration file. When an option is missing from a style, the default values are used instead. A configuration file may specify several styles (at least 1) to choose using the **-s** argument.
 
 This example configuration file provides two styles "volume" and "backlight". Instances of xog launched with **-s volume** and **-s backlight** will look according to the corresponding style.

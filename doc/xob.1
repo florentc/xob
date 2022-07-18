@@ -169,9 +169,12 @@ In the following, a dot \[lq].\[rq] means \[lq]suboption\[rq].
 For instance \[lq]color.normal.fg\[rq] means \[lq]The suboption fg of
 the suboption normal of option color\[rq].
 .TP
-\f[B]monitor\f[R] \f[I]\[lq]output_name\[rq]\f[R] (default: combined)
+\f[B]monitor\f[R] \f[I]\[lq]output_name\[rq] | \[lq]relative_focus\[rq] | \[lq]relative_pointer\[rq] | \[lq]combined\[rq]\f[R] (default: combined)
 Output monitor for the bar, use \f[I]xrandr\f[R] command to get monitors names.
-The option is case-sensitive.
+Use \f[I]relative_focus\f[R] to show the bar on the monitor with a focused window.
+Use \f[I]relative_pointer\f[R] to show the bar on the monitor with a mouse
+pointer. Use \f[I]combined\f[R] to show the bar on the combined surface of all
+monitors. The option is case-sensitive.
 .TP
 \f[B]orientation\f[R] \f[I]\[lq]horizontal\[rq] | \[lq]vertical\[rq]\f[R] (default: vertical)
 Orientation of the bar which either fills up from left to right

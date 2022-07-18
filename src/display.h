@@ -20,6 +20,15 @@
 
 #include "conf.h"
 #include <X11/Xlib.h>
+#include <X11/extensions/Xrandr.h>
+
+typedef enum
+{
+    POSITION_RELATIVE_FOCUS,
+    POSITION_RELATIVE_POINTER,
+    POSITION_COMBINED,
+    POSITION_SPECIFIED
+} Bar_position;
 
 typedef enum
 {
@@ -52,7 +61,23 @@ typedef struct
     int border;
     int padding;
     int length;
+    struct
+    {
+        double rel;
+        int abs;
+    } length_dynamic;
     int thickness;
+    struct
+    {
+        double rel;
+        int abs;
+    } x;
+    struct
+    {
+        double rel;
+        int abs;
+    } y;
+    Bar_position bar_position;
     Orientation orientation;
 } Geometry_context;
 
