@@ -449,31 +449,29 @@ Display_context init(Style conf)
 }
 
 /* PUBLIC Cleans the X memory buffers. */
-void display_context_destroy(Display_context dc)
+void display_context_destroy(Display_context *pdc)
 {
-    XCloseDisplay(dc.x.display);
+    XCloseDisplay(pdc->x.display);
 }
 
 /* PUBLIC Show a bar filled at value/cap in normal or alternative mode */
-Display_context show(Display_context dc, int value, int cap,
-                     Overflow_mode overflow_mode, Show_mode show_mode)
+void show(Display_context *pdc, int value, int cap, Overflow_mode overflow_mode,
+          Show_mode show_mode)
 {
-    Display_context newdc = dc;
-
     Colors colors;
     Colors colors_overflow_proportional;
     static int_fast8_t current_state = 0x0;
     static int_fast8_t last_state = 0x0;
 
     /* Move the bar for relative positions */
-    switch (dc.geometry.bar_position)
+    switch (pdc->geometry.bar_position)
     {
     case POSITION_RELATIVE_FOCUS:
-        move_resize_to_focused_monitor(&dc);
+        move_resize_to_focused_monitor(pdc);
         current_state ^= STATE_SIZE;
         break;
     case POSITION_RELATIVE_POINTER:
-        move_resize_to_pointer_monitor(&dc);
+        move_resize_to_pointer_monitor(pdc);
         current_state ^= STATE_SIZE;
         break;
     case POSITION_COMBINED:
@@ -481,85 +479,81 @@ Display_context show(Display_context dc, int value, int cap,
         break;
     }
 
-    if (!dc.x.mapped)
+    if (!pdc->x.mapped)
     {
-        XMapWindow(dc.x.display, dc.x.window);
-        XRaiseWindow(dc.x.display, dc.x.window);
-        newdc.x.mapped = True;
+        XMapWindow(pdc->x.display, pdc->x.window);
+        XRaiseWindow(pdc->x.display, pdc->x.window);
+        pdc->x.mapped = True;
+        current_state ^= STATE_MAPPED;
     }
 
     switch (show_mode)
     {
     case NORMAL:
-        colors_overflow_proportional = dc.colorscheme.normal;
+        colors_overflow_proportional = pdc->colorscheme.normal;
         current_state &= ~STATE_ALT;
         if (value <= cap)
         {
-            colors = dc.colorscheme.normal;
+            colors = pdc->colorscheme.normal;
             current_state &= ~STATE_OVERFLOW;
         }
         else
         {
-            colors = dc.colorscheme.overflow;
+            colors = pdc->colorscheme.overflow;
             colors_overflow_proportional.bg = colors.fg;
             current_state |= STATE_OVERFLOW;
         }
         break;
 
     case ALTERNATIVE:
-        colors_overflow_proportional = dc.colorscheme.alt;
+        colors_overflow_proportional = pdc->colorscheme.alt;
         current_state |= STATE_ALT;
         if (value <= cap)
         {
-            colors = dc.colorscheme.alt;
+            colors = pdc->colorscheme.alt;
             current_state &= ~STATE_OVERFLOW;
         }
         else
         {
-            colors = dc.colorscheme.altoverflow;
+            colors = pdc->colorscheme.altoverflow;
             colors_overflow_proportional.bg = colors.fg;
             current_state |= STATE_OVERFLOW;
         }
         break;
     }
 
-    if (!dc.x.mapped || last_state != current_state)
+    if (last_state != current_state)
     {
         /* Empty bar */
-        draw_empty(dc.x, dc.geometry, colors);
+        draw_empty(pdc->x, pdc->geometry, colors);
     }
     last_state = current_state;
 
     /* Proportional overflow : draw separator */
     if (value > cap && overflow_mode == PROPORTIONAL &&
-        cap * dc.geometry.length / value > dc.geometry.padding)
+        cap * pdc->geometry.length / value > pdc->geometry.padding)
     {
-        draw_content(dc.x, dc.geometry, cap * dc.geometry.length / value,
+        draw_content(pdc->x, pdc->geometry, cap * pdc->geometry.length / value,
                      colors_overflow_proportional);
-        draw_separator(dc.x, dc.geometry, cap * dc.geometry.length / value,
-                       colors.bg);
+        draw_separator(pdc->x, pdc->geometry,
+                       cap * pdc->geometry.length / value, colors.bg);
     }
     else // Value is less then cap
         /* Content */
-        draw_content(dc.x, dc.geometry,
-                     fit_in(value, 0, cap) * dc.geometry.length / cap, colors);
+        draw_content(pdc->x, pdc->geometry,
+                     fit_in(value, 0, cap) * pdc->geometry.length / cap,
+                     colors);
 
-    XFlush(dc.x.display);
-
-    return newdc;
+    XFlush(pdc->x.display);
 }
 
 /* PUBLIC Hide the window */
-Display_context hide(Display_context dc)
+void hide(Display_context *pdc)
 {
-    Display_context newdc = dc;
-
-    if (dc.x.mapped)
+    if (pdc->x.mapped)
     {
-        XUnmapWindow(dc.x.display, dc.x.window);
-        newdc.x.mapped = False;
-        XFlush(dc.x.display);
+        XUnmapWindow(pdc->x.display, pdc->x.window);
+        pdc->x.mapped = False;
+        XFlush(pdc->x.display);
     }
-
-    return newdc;
 }

@@ -25,6 +25,7 @@
 #define STATE_ALT (0x1)
 #define STATE_OVERFLOW (0x1 << 1)
 #define STATE_SIZE (0x1 << 2)
+#define STATE_MAPPED (0x1 << 3)
 
 typedef enum
 {
@@ -93,10 +94,10 @@ typedef struct
 } Display_context;
 
 Display_context init(Style conf);
-Display_context show(Display_context dc, int value, int cap,
-                     Overflow_mode overflow_mode, Show_mode show_mode);
-Display_context hide(Display_context dc);
-void display_context_destroy(Display_context dc);
+void show(Display_context *pdc, int value, int cap, Overflow_mode overflow_mode,
+          Show_mode show_mode);
+void hide(Display_context *pdc);
+void display_context_destroy(Display_context *pdc);
 
 /* Draw a rectangle with the given size, position and color */
 void fill_rectangle(X_context xc, Color c, int x, int y, unsigned int w,
