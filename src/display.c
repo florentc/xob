@@ -463,16 +463,16 @@ void show(Display_context *pdc, int value, int cap, Overflow_mode overflow_mode,
     static int_fast8_t current_state = 0x0;
     static int_fast8_t last_state = 0x0;
 
+    int old_length = pdc->geometry.length;
+
     /* Move the bar for relative positions */
     switch (pdc->geometry.bar_position)
     {
     case POSITION_RELATIVE_FOCUS:
         move_resize_to_focused_monitor(pdc);
-        current_state ^= STATE_SIZE;
         break;
     case POSITION_RELATIVE_POINTER:
         move_resize_to_pointer_monitor(pdc);
-        current_state ^= STATE_SIZE;
         break;
     case POSITION_COMBINED:
     case POSITION_SPECIFIED:
@@ -522,7 +522,8 @@ void show(Display_context *pdc, int value, int cap, Overflow_mode overflow_mode,
         break;
     }
 
-    if (last_state != current_state)
+    /* Redraw empty bar only if needed */
+    if (last_state != current_state || old_length != pdc->geometry.length)
     {
         /* Empty bar */
         draw_empty(pdc->x, pdc->geometry, colors);

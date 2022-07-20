@@ -24,8 +24,7 @@
 
 #define STATE_ALT (0x1)
 #define STATE_OVERFLOW (0x1 << 1)
-#define STATE_SIZE (0x1 << 2)
-#define STATE_MAPPED (0x1 << 3)
+#define STATE_MAPPED (0x1 << 2)
 
 typedef enum
 {
