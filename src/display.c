@@ -19,6 +19,8 @@
 
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
+#include <X11/extensions/Xrandr.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -35,6 +37,7 @@ static int size_x(Geometry_context g)
 {
     return g.orientation == HORIZONTAL ? g.length : g.thickness;
 }
+
 static int size_y(Geometry_context g)
 {
     return g.orientation == HORIZONTAL ? g.thickness : g.length;
@@ -44,34 +47,107 @@ static int size_y(Geometry_context g)
 static void draw_empty(X_context x, Geometry_context g, Colors colors)
 {
     /* Outline */
+#ifdef _DEBUG_
+    // fill_rectangle(x, colors.bg, 0, 0,
+    //                2 * (g.outline + g.border + g.padding) + size_x(g),
+    //                2 * (g.outline + g.border + g.padding) + size_y(g));
+#endif
+    /* Left */
+    fill_rectangle(x, colors.bg, 0, 0, g.outline,
+                   2 * (g.outline + g.border + g.padding) + size_y(g));
+
+    /* Right */
+    fill_rectangle(
+        x, colors.bg, 2 * (g.border + g.padding) + g.outline + size_x(g), 0,
+        g.outline, 2 * (g.outline + g.border + g.padding) + size_y(g));
+
+    /* Top */
     fill_rectangle(x, colors.bg, 0, 0,
                    2 * (g.outline + g.border + g.padding) + size_x(g),
-                   2 * (g.outline + g.border + g.padding) + size_y(g));
+                   g.outline);
+
+    /* Bottom */
+    fill_rectangle(
+        x, colors.bg, 0, 2 * (g.border + g.padding) + g.outline + size_y(g),
+        2 * (g.outline + g.border + g.padding) + size_x(g), g.outline);
+
     /* Border */
+#ifdef _DEBUG_
     fill_rectangle(x, colors.border, g.outline, g.outline,
                    2 * (g.border + g.padding) + size_x(g),
                    2 * (g.border + g.padding) + size_y(g));
+#endif
+    /* Left */
+    fill_rectangle(x, colors.border, g.outline, g.outline, g.border,
+                   2 * (g.border + g.padding) + size_y(g));
+
+    /* Right */
+    fill_rectangle(x, colors.border,
+                   g.outline + g.border + 2 * g.padding + size_x(g), g.outline,
+                   g.border, 2 * (g.border + g.padding) + size_y(g));
+
+    /* Top */
+    fill_rectangle(x, colors.border, g.outline, g.outline,
+                   2 * (g.border + g.padding) + size_x(g), g.border);
+
+    /* Bottom */
+    fill_rectangle(x, colors.border, g.outline,
+                   g.outline + g.border + 2 * g.padding + size_y(g),
+                   2 * (g.border + g.padding) + size_x(g), g.border);
+
     /* Padding */
+#ifdef _DEBUG_
     fill_rectangle(x, colors.bg, g.outline + g.border, g.outline + g.border,
                    2 * g.padding + size_x(g), 2 * g.padding + size_y(g));
+#endif
+
+    /* Left */
+    fill_rectangle(x, colors.bg, g.outline + g.border, g.outline + g.border,
+                   g.padding, 2 * g.padding + size_y(g));
+
+    /* Right */
+    fill_rectangle(x, colors.bg, g.outline + g.border + g.padding + size_x(g),
+                   g.outline + g.border, g.padding, 2 * g.padding + size_y(g));
+
+    /* Top */
+    fill_rectangle(x, colors.bg, g.outline + g.border, g.outline + g.border,
+                   2 * g.padding + size_x(g), g.padding);
+
+    /* Bottom */
+    fill_rectangle(x, colors.bg, g.outline + g.border,
+                   g.outline + g.border + g.padding + size_y(g),
+                   2 * g.padding + size_x(g), g.padding);
 }
 
 /* Draw a given length of filled bar with the given color */
 static void draw_content(X_context x, Geometry_context g, int filled_length,
-                         Color color)
+                         Colors colors)
 {
     if (g.orientation == HORIZONTAL)
     {
-        fill_rectangle(x, color, g.outline + g.border + g.padding,
+        /* Fill foreground color */
+        fill_rectangle(x, colors.fg, g.outline + g.border + g.padding,
                        g.outline + g.border + g.padding, filled_length,
                        g.thickness);
+
+        /* Fill background color */
+        fill_rectangle(x, colors.bg,
+                       g.outline + g.border + g.padding + filled_length,
+                       g.outline + g.border + g.padding,
+                       g.length - filled_length, g.thickness);
     }
     else
     {
-        fill_rectangle(x, color, g.outline + g.border + g.padding,
+        /* fill foreground color */
+        fill_rectangle(x, colors.fg, g.outline + g.border + g.padding,
                        g.outline + g.border + g.padding + g.length -
                            filled_length,
                        g.thickness, filled_length);
+
+        /* Fill background color */
+        fill_rectangle(x, colors.bg, g.outline + g.border + g.padding,
+                       g.outline + g.border + g.padding, g.thickness,
+                       g.length - filled_length);
     }
 }
 
@@ -102,31 +178,178 @@ void compute_geometry(Style conf, Display_context *dc, int *topleft_x,
     dc->geometry.padding = conf.padding;
     dc->geometry.thickness = conf.thickness;
     dc->geometry.orientation = conf.orientation;
+    dc->geometry.length_dynamic.rel = conf.length.rel;
+    dc->geometry.length_dynamic.abs = conf.length.abs;
+
     *fat_layer =
         dc->geometry.padding + dc->geometry.border + dc->geometry.outline;
 
     /* Orientation-related dimensions */
     *available_length = dc->geometry.orientation == HORIZONTAL
-                            ? WidthOfScreen(dc->x.screen)
-                            : HeightOfScreen(dc->x.screen);
+                            ? dc->x.monitor_info.width
+                            : dc->x.monitor_info.height;
 
     dc->geometry.length =
         fit_in(*available_length * conf.length.rel + conf.length.abs, 0,
                *available_length - 2 * *fat_layer);
 
     /* Compute position of the top-left corner */
-    *topleft_x = fit_in(WidthOfScreen(dc->x.screen) * conf.x.rel -
+    *topleft_x = fit_in(dc->x.monitor_info.width * conf.x.rel -
                             (size_x(dc->geometry) + 2 * *fat_layer) / 2,
                         0,
-                        WidthOfScreen(dc->x.screen) -
+                        dc->x.monitor_info.width -
                             (size_x(dc->geometry) + 2 * *fat_layer)) +
-                 conf.x.abs;
-    *topleft_y = fit_in(HeightOfScreen(dc->x.screen) * conf.y.rel -
+                 conf.x.abs + dc->x.monitor_info.x;
+    *topleft_y = fit_in(dc->x.monitor_info.height * conf.y.rel -
                             (size_y(dc->geometry) + 2 * *fat_layer) / 2,
                         0,
-                        HeightOfScreen(dc->x.screen) -
+                        dc->x.monitor_info.height -
                             (size_y(dc->geometry) + 2 * *fat_layer)) +
-                 conf.y.abs;
+                 conf.y.abs + dc->x.monitor_info.y;
+}
+
+/* Set combined positon */
+static void set_combined_position(Display_context *pdc)
+{
+    pdc->x.monitor_info.x = 0;
+    pdc->x.monitor_info.y = 0;
+    pdc->x.monitor_info.width = WidthOfScreen(pdc->x.screen);
+    pdc->x.monitor_info.height = HeightOfScreen(pdc->x.screen);
+    // strcpy(pdc->x.monitor_info.name, MONITOR_COMBINED);
+}
+
+/* Set specified monitor */
+static void set_specified_position(Display_context *pdc, const Style *pconf)
+{
+    Window root = RootWindow(pdc->x.display, pdc->x.screen_number);
+
+    /* Get monitors info */
+    int num_monitors;
+    char *monitor_name;
+    XRRMonitorInfo *monitor_sizes =
+        XRRGetMonitors(pdc->x.display, root, 0, &num_monitors);
+
+    /* Compare monitors output names */
+    int i;
+    for (i = 0; i < num_monitors; i++)
+    {
+        monitor_name = XGetAtomName(pdc->x.display, monitor_sizes[i].name);
+        if (strcmp(pconf->monitor, monitor_name) == 0)
+            break;
+    }
+    if (i != num_monitors)
+    {
+        pdc->x.monitor_info.x = monitor_sizes[i].x;
+        pdc->x.monitor_info.y = monitor_sizes[i].y;
+        pdc->x.monitor_info.width = monitor_sizes[i].width;
+        pdc->x.monitor_info.height = monitor_sizes[i].height;
+        strcpy(pdc->x.monitor_info.name, monitor_name);
+    }
+    else // Monitor name is not found
+    {
+        /* Use combined surface for monitor option if no monitors with
+         * provided name found */
+        fprintf(stderr, "Error: monitor %s is not found.\n", pconf->monitor);
+        fprintf(stderr, "Info: falling back to combined mode.\n");
+        set_combined_position(pdc);
+        // strcpy(pdc.x.monitor_info.name, MONITOR_COMBINED);
+    }
+    XRRFreeMonitors(monitor_sizes);
+}
+
+/* Move and resize the bar relative to a monitor with provided coords */
+static void move_resize_to_coords_monitor(Display_context *pdc, int x, int y)
+{
+    int fat_layer, available_length, bar_size_x, bar_size_y, i;
+    int topleft_x, topleft_y;
+    int num_monitors;
+    XRRMonitorInfo *monitor_sizes;
+    fat_layer =
+        pdc->geometry.padding + pdc->geometry.border + pdc->geometry.outline;
+
+    monitor_sizes = XRRGetMonitors(
+        pdc->x.display, RootWindow(pdc->x.display, pdc->x.screen_number), 0,
+        &num_monitors);
+    for (i = 0; i < num_monitors; i++)
+    {
+        /* Find monitor by coords */
+        if (x >= monitor_sizes[i].x &&
+            x < monitor_sizes[i].x + monitor_sizes[i].width &&
+            y >= monitor_sizes[i].y &&
+            y < monitor_sizes[i].y + monitor_sizes[i].height)
+        {
+            /* Recalculate bar sizes */
+            available_length = pdc->geometry.orientation == HORIZONTAL
+                                   ? monitor_sizes[i].width
+                                   : monitor_sizes[i].height;
+
+            pdc->geometry.length =
+                fit_in(available_length * pdc->geometry.length_dynamic.rel +
+                           pdc->geometry.length_dynamic.abs,
+                       0, available_length - 2 * fat_layer);
+
+            bar_size_x = size_x(pdc->geometry) + 2 * fat_layer;
+            bar_size_y = size_y(pdc->geometry) + 2 * fat_layer;
+
+            /* Recalculate bar position */
+            topleft_x = fit_in(monitor_sizes[i].width * pdc->geometry.x.rel -
+                                   bar_size_x / 2,
+                               0, monitor_sizes[i].width - bar_size_x) +
+                        pdc->geometry.x.abs + monitor_sizes[i].x;
+
+            topleft_y = fit_in(monitor_sizes[i].height * pdc->geometry.y.rel -
+                                   bar_size_y / 2,
+                               0, monitor_sizes[i].height - bar_size_y) +
+                        pdc->geometry.y.abs + monitor_sizes[i].y;
+
+            /* Move and resize bar */
+            XMoveResizeWindow(pdc->x.display, pdc->x.window, topleft_x,
+                              topleft_y, bar_size_x, bar_size_y);
+            break;
+        }
+    }
+
+    XRRFreeMonitors(monitor_sizes);
+}
+
+/* Mobe the bar to monitor with focused window */
+static void move_resize_to_focused_monitor(Display_context *pdc)
+{
+    int revert_to_window;
+    int focused_x, focused_y;
+    int dummy_x, dummy_y;
+    unsigned int focused_width, focused_height, focused_border, focused_depth;
+
+    Window focused_window, fchild_window;
+
+    XGetInputFocus(pdc->x.display, &focused_window, &revert_to_window);
+
+    /* Get coords of focused window */
+    XTranslateCoordinates(pdc->x.display, focused_window,
+                          RootWindow(pdc->x.display, pdc->x.screen_number), 0,
+                          0, &focused_x, &focused_y, &fchild_window);
+    /* Get focused window width and height to move bar relative to
+     * the center of focused window */
+    XGetGeometry(pdc->x.display, focused_window, &fchild_window, &dummy_x,
+                 &dummy_y, &focused_width, &focused_height, &focused_border,
+                 &focused_depth);
+
+    move_resize_to_coords_monitor(pdc, focused_x + focused_width / 2,
+                                  focused_y + focused_height / 2);
+}
+
+/* Move the bar to monitor with pointer */
+static void move_resize_to_pointer_monitor(Display_context *pdc)
+{
+    int pointer_x, pointer_y, win_x, win_y;
+    unsigned int p_mask;
+    Window p_root, p_child;
+
+    XQueryPointer(pdc->x.display,
+                  RootWindow(pdc->x.display, pdc->x.screen_number), &p_root,
+                  &p_child, &pointer_x, &pointer_y, &win_x, &win_y, &p_mask);
+
+    move_resize_to_coords_monitor(pdc, pointer_x, pointer_y);
 }
 
 /* PUBLIC Returns a new display context from a given configuration. If the
@@ -159,6 +382,42 @@ Display_context init(Style conf)
         window_attributes.border_pixel = 0;
         window_attributes.override_redirect = True;
 
+        /* Write bar position relative data to X_context */
+        dc.geometry.x.rel = conf.x.rel;
+        dc.geometry.x.abs = conf.x.abs;
+        dc.geometry.y.rel = conf.y.rel;
+        dc.geometry.y.abs = conf.y.abs;
+
+        /* Get bar position from conf */
+        if (strcmp(conf.monitor, MONITOR_RELATIVE_FOCUS) == 0)
+            dc.geometry.bar_position = POSITION_RELATIVE_FOCUS;
+        else if (strcmp(conf.monitor, MONITOR_RELATIVE_POINTER) == 0)
+            dc.geometry.bar_position = POSITION_RELATIVE_POINTER;
+        else if (strcmp(conf.monitor, MONITOR_COMBINED) == 0)
+            dc.geometry.bar_position = POSITION_COMBINED;
+        else
+            dc.geometry.bar_position = POSITION_SPECIFIED;
+
+        switch (dc.geometry.bar_position)
+        {
+        case POSITION_RELATIVE_FOCUS:
+        case POSITION_RELATIVE_POINTER:
+            /* Bar position and sizes will be recalculated every time before
+             * showing, so the code just init position and sizes like for
+             * combined surface */
+            set_combined_position(&dc);
+            break;
+        case POSITION_COMBINED:
+            set_combined_position(&dc);
+            break;
+        case POSITION_SPECIFIED:
+            set_specified_position(&dc, &conf);
+            break;
+        default:
+            fprintf(stderr, "Error: in switch position\n");
+            break;
+        }
+
         compute_geometry(conf, &dc, &topleft_x, &topleft_y, &fat_layer,
                          &available_length);
 
@@ -190,79 +449,112 @@ Display_context init(Style conf)
 }
 
 /* PUBLIC Cleans the X memory buffers. */
-void display_context_destroy(Display_context dc)
+void display_context_destroy(Display_context *pdc)
 {
-    XCloseDisplay(dc.x.display);
+    XCloseDisplay(pdc->x.display);
 }
 
 /* PUBLIC Show a bar filled at value/cap in normal or alternative mode */
-Display_context show(Display_context dc, int value, int cap,
-                     Overflow_mode overflow_mode, Show_mode show_mode)
+void show(Display_context *pdc, int value, int cap, Overflow_mode overflow_mode,
+          Show_mode show_mode)
 {
-    Display_context newdc = dc;
-
     Colors colors;
     Colors colors_overflow_proportional;
+    static int_fast8_t current_state = 0x0;
+    static int_fast8_t last_state = 0x0;
 
-    if (!dc.x.mapped)
+    int old_length = pdc->geometry.length;
+
+    /* Move the bar for relative positions */
+    switch (pdc->geometry.bar_position)
     {
-        XMapWindow(dc.x.display, dc.x.window);
-        XRaiseWindow(dc.x.display, dc.x.window);
-        newdc.x.mapped = True;
+    case POSITION_RELATIVE_FOCUS:
+        move_resize_to_focused_monitor(pdc);
+        break;
+    case POSITION_RELATIVE_POINTER:
+        move_resize_to_pointer_monitor(pdc);
+        break;
+    case POSITION_COMBINED:
+    case POSITION_SPECIFIED:
+        break;
+    }
+
+    if (!pdc->x.mapped)
+    {
+        XMapWindow(pdc->x.display, pdc->x.window);
+        XRaiseWindow(pdc->x.display, pdc->x.window);
+        pdc->x.mapped = True;
+        current_state ^= STATE_MAPPED;
     }
 
     switch (show_mode)
     {
     case NORMAL:
-        colors_overflow_proportional = dc.colorscheme.normal;
+        colors_overflow_proportional = pdc->colorscheme.normal;
+        current_state &= ~STATE_ALT;
         if (value <= cap)
-            colors = dc.colorscheme.normal;
+        {
+            colors = pdc->colorscheme.normal;
+            current_state &= ~STATE_OVERFLOW;
+        }
         else
-            colors = dc.colorscheme.overflow;
+        {
+            colors = pdc->colorscheme.overflow;
+            colors_overflow_proportional.bg = colors.fg;
+            current_state |= STATE_OVERFLOW;
+        }
         break;
 
     case ALTERNATIVE:
-        colors_overflow_proportional = dc.colorscheme.alt;
+        colors_overflow_proportional = pdc->colorscheme.alt;
+        current_state |= STATE_ALT;
         if (value <= cap)
-            colors = dc.colorscheme.alt;
+        {
+            colors = pdc->colorscheme.alt;
+            current_state &= ~STATE_OVERFLOW;
+        }
         else
-            colors = dc.colorscheme.altoverflow;
+        {
+            colors = pdc->colorscheme.altoverflow;
+            colors_overflow_proportional.bg = colors.fg;
+            current_state |= STATE_OVERFLOW;
+        }
         break;
     }
 
-    /* Empty bar */
-    draw_empty(dc.x, dc.geometry, colors);
-
-    /* Content */
-    draw_content(dc.x, dc.geometry,
-                 fit_in(value, 0, cap) * dc.geometry.length / cap, colors.fg);
+    /* Redraw empty bar only if needed */
+    if (last_state != current_state || old_length != pdc->geometry.length)
+    {
+        /* Empty bar */
+        draw_empty(pdc->x, pdc->geometry, colors);
+    }
+    last_state = current_state;
 
     /* Proportional overflow : draw separator */
     if (value > cap && overflow_mode == PROPORTIONAL &&
-        cap * dc.geometry.length / value > dc.geometry.padding)
+        cap * pdc->geometry.length / value > pdc->geometry.padding)
     {
-        draw_content(dc.x, dc.geometry, cap * dc.geometry.length / value,
-                     colors_overflow_proportional.fg);
-        draw_separator(dc.x, dc.geometry, cap * dc.geometry.length / value,
-                       colors.bg);
+        draw_content(pdc->x, pdc->geometry, cap * pdc->geometry.length / value,
+                     colors_overflow_proportional);
+        draw_separator(pdc->x, pdc->geometry,
+                       cap * pdc->geometry.length / value, colors.bg);
     }
+    else // Value is less then cap
+        /* Content */
+        draw_content(pdc->x, pdc->geometry,
+                     fit_in(value, 0, cap) * pdc->geometry.length / cap,
+                     colors);
 
-    XFlush(dc.x.display);
-
-    return newdc;
+    XFlush(pdc->x.display);
 }
 
 /* PUBLIC Hide the window */
-Display_context hide(Display_context dc)
+void hide(Display_context *pdc)
 {
-    Display_context newdc = dc;
-
-    if (dc.x.mapped)
+    if (pdc->x.mapped)
     {
-        XUnmapWindow(dc.x.display, dc.x.window);
-        newdc.x.mapped = False;
-        XFlush(dc.x.display);
+        XUnmapWindow(pdc->x.display, pdc->x.window);
+        pdc->x.mapped = False;
+        XFlush(pdc->x.display);
     }
-
-    return newdc;
 }

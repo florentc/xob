@@ -229,6 +229,22 @@ static int config_setting_lookup_orientation(const config_setting_t *setting,
     return success_status;
 }
 
+static int config_setting_lookup_monitor(const config_setting_t *setting,
+                                         const char *name, char *monitorvalue)
+{
+    const char *stringvalue;
+
+    if (config_setting_lookup_string(setting, name, &stringvalue))
+    {
+        strncpy(monitorvalue, stringvalue, LNAME_MONITOR);
+    }
+    else
+    {
+        fprintf(stderr, "Error: No style %s.\n", name);
+    }
+    return CONFIG_TRUE;
+}
+
 Style parse_style_config(FILE *file, const char *stylename, Style default_style)
 {
     config_t config;
@@ -243,6 +259,7 @@ Style parse_style_config(FILE *file, const char *stylename, Style default_style)
         xob_config = config_lookup(&config, stylename);
         if (xob_config != NULL)
         {
+            config_setting_lookup_monitor(xob_config, "monitor", style.monitor);
             config_setting_lookup_int(xob_config, "thickness",
                                       &style.thickness);
             config_setting_lookup_int(xob_config, "border", &style.border);

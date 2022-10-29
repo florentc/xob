@@ -206,7 +206,7 @@ int main(int argc, char *argv[])
                 exit(EXIT_FAILURE);
             case 0:
                 /* Time to hide the gauge */
-                display_context = hide(display_context);
+                hide(&display_context);
                 displayed = false;
                 break;
             default:
@@ -214,9 +214,8 @@ int main(int argc, char *argv[])
                 input_value = parse_input();
                 if (input_value.valid)
                 {
-                    display_context =
-                        show(display_context, input_value.value, cap,
-                             style.overflow, input_value.show_mode);
+                    show(&display_context, input_value.value, cap,
+                         style.overflow, input_value.show_mode);
                     printf("Update: %d/%d %s\n", input_value.value, cap,
                            (input_value.show_mode == ALTERNATIVE) ? "[ALT]"
                                                                   : "");
@@ -233,7 +232,7 @@ int main(int argc, char *argv[])
         }
 
         /* Clean the memory */
-        display_context_destroy(display_context);
+        display_context_destroy(&display_context);
     }
     return EXIT_SUCCESS;
 }
