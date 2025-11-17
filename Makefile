@@ -14,8 +14,9 @@ else
 endif
 
 OBJECTS = $(SOURCES:.c=.o)
-CFLAGS  += $(shell pkg-config --cflags $(LIBS)) -std=c99 -Wall -Wextra -pedantic
-LDFLAGS += $(shell pkg-config --libs $(LIBS))
+PKG_CONFIG ?= pkg-config
+CFLAGS  += $(shell $(PKG_CONFIG) --cflags $(LIBS)) -std=c99 -Wall -Wextra -pedantic
+LDFLAGS += $(shell $(PKG_CONFIG) --libs $(LIBS))
 
 INSTALL         ?= install
 INSTALL_PROGRAM ?= $(INSTALL)
