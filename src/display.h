@@ -20,6 +20,19 @@
 
 #include "conf.h"
 #include <X11/Xlib.h>
+#include <X11/extensions/Xrandr.h>
+
+#define STATE_ALT (0x1)
+#define STATE_OVERFLOW (0x1 << 1)
+#define STATE_MAPPED (0x1 << 2)
+
+typedef enum
+{
+    POSITION_RELATIVE_FOCUS,
+    POSITION_RELATIVE_POINTER,
+    POSITION_COMBINED,
+    POSITION_SPECIFIED
+} Bar_position;
 
 typedef enum
 {
@@ -29,11 +42,21 @@ typedef enum
 
 typedef struct
 {
+    char name[10];
+    int x;
+    int y;
+    int width;
+    int height;
+} MonitorInfo;
+
+typedef struct
+{
     Display *display;
     int screen_number;
     Screen *screen;
     Window window;
     Bool mapped;
+    MonitorInfo monitor_info;
 } X_context;
 
 typedef struct
@@ -42,7 +65,23 @@ typedef struct
     int border;
     int padding;
     int length;
+    struct
+    {
+        double rel;
+        int abs;
+    } length_dynamic;
     int thickness;
+    struct
+    {
+        double rel;
+        int abs;
+    } x;
+    struct
+    {
+        double rel;
+        int abs;
+    } y;
+    Bar_position bar_position;
     Orientation orientation;
 } Geometry_context;
 
@@ -54,10 +93,10 @@ typedef struct
 } Display_context;
 
 Display_context init(Style conf);
-Display_context show(Display_context dc, int value, int cap,
-                     Overflow_mode overflow_mode, Show_mode show_mode);
-Display_context hide(Display_context dc);
-void display_context_destroy(Display_context dc);
+void show(Display_context *pdc, int value, int cap, Overflow_mode overflow_mode,
+          Show_mode show_mode);
+void hide(Display_context *pdc);
+void display_context_destroy(Display_context *pdc);
 
 /* Draw a rectangle with the given size, position and color */
 void fill_rectangle(X_context xc, Color c, int x, int y, unsigned int w,

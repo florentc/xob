@@ -20,6 +20,12 @@
 
 #include <stdio.h>
 
+#define MONITOR_RELATIVE_FOCUS "relative_focus"
+#define MONITOR_RELATIVE_POINTER "relative_pointer"
+#define MONITOR_COMBINED "combined"
+
+#define LNAME_MONITOR 17
+
 typedef struct
 {
     unsigned char red;
@@ -63,6 +69,7 @@ typedef enum
 
 typedef struct
 {
+    char monitor[LNAME_MONITOR];
     Dim x;
     Dim y;
     Dim length;
@@ -77,6 +84,7 @@ typedef struct
 
 /* clang-format off */
 #define DEFAULT_CONFIGURATION (Style) {\
+        .monitor = MONITOR_COMBINED,\
         .x =\
         {\
             .rel = 1.0,\

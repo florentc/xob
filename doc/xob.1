@@ -169,6 +169,13 @@ In the following, a dot \[lq].\[rq] means \[lq]suboption\[rq].
 For instance \[lq]color.normal.fg\[rq] means \[lq]The suboption fg of
 the suboption normal of option color\[rq].
 .TP
+\f[B]monitor\f[R] \f[I]\[lq]output_name\[rq] | \[lq]relative_focus\[rq] | \[lq]relative_pointer\[rq] | \[lq]combined\[rq]\f[R] (default: combined)
+Output monitor for the bar, use \f[I]xrandr\f[R] command to get monitors names.
+Use \f[I]relative_focus\f[R] to show the bar on the monitor with a focused window.
+Use \f[I]relative_pointer\f[R] to show the bar on the monitor with a mouse
+pointer. Use \f[I]combined\f[R] to show the bar on the combined surface of all
+monitors. The option is case-sensitive.
+.TP
 \f[B]orientation\f[R] \f[I]\[lq]horizontal\[rq] | \[lq]vertical\[rq]\f[R] (default: vertical)
 Orientation of the bar which either fills up from left to right
 (\[lq]horizontal\[rq]) or bottom to top (\[lq]vertical\[rq]).
@@ -301,6 +308,7 @@ backlight = {
 .nf
 \f[C]
 default = {
+    monitor   = \[dq]combined\[dq];
     x         = {relative = 1; offset = -48;};
     y         = {relative = 0.5; offset = 0;};
     length    = {relative = 0.3; offset = 0;};
@@ -367,17 +375,17 @@ situations.
 \[lq]How to set up xob with multiple monitors?\[rq]
 .RE
 .PP
-xob works well under multihead setups but there is no easy way to
-configure the position of the bar for now.
-For example, in a dual monitor setup with the default configuration, the
-horizontal centering is not local to one of the two monitors.
-It is global.
-The bar might be split in two: one part on each screen.
-Stick to a corner or use absolute positioning.
-If you want an xob instance to be centered (horizontally) on the
-far-right monitor, set \f[I]x.relative\f[R] to 1.0 (anchored on the far
-right) and the \f[I]x.offset\f[R] to minus half the width of that
-screen.
+xob works well under multihead setups, use option \f[I]monitor\f[R] to
+specify one. By default xob use \f[I]combined\f[R] for the option. It means
+that in a dual monitor setup with the default configuration,
+the horizontal centering is not local to one of the two monitors.
+It is global. The bar might be split in two: one part on each screen.
+If you want an xob instance to be centered (horizontally) on the specific
+monitor, set \f[I]monitor\f[R] option to your monitor output,
+for example \f[I]monitor = \[lq]HDMI-1\[rq]\f[R] and set options
+\f[I]x.relative\f[R] and \f[I]y.relative\f[R] relative to the monitor.
+To get monitors output name you can use \f[I]xrandr --listmonitors\f[R]
+command in your terminal.
 .SH CONTRIBUTIONS
 .PP
 Feedback and contributions are welcome.
