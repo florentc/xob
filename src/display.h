@@ -29,11 +29,21 @@ typedef enum
 
 typedef struct
 {
+    char name[10];
+    int x;
+    int y;
+    int width;
+    int height;
+} MonitorInfo;
+
+typedef struct
+{
     Display *display;
     int screen_number;
     Screen *screen;
     Window window;
     Bool mapped;
+    MonitorInfo monitor_info;
 } X_context;
 
 typedef struct
